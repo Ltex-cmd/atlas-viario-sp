@@ -16,7 +16,7 @@ O GitHub Pages hospeda a interface estática compilada com React, TypeScript, Vi
 
 API da publicação: https://atlas-viario-api-lucas.flowy-swift-7745.chatgpt.site
 
-- `pages/`: entrada do frontend estático.
+- `web/`: entrada do frontend estático.
 - `components/`, `app/globals.css`: interface compartilhada.
 - `worker/`: transporte HTTP, validação, API de rotas e motor C/Wasm.
 - `engine-source/`: fonte C exata do módulo compilado.

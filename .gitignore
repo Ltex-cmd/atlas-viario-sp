@@ -48,4 +48,7 @@ yarn-error.log*
 /node_modules
 /dist-pages/
 /.pages-cache/
-/pages/node_modules/
+/web/node_modules/
+
+# Temporary source bootstrap, removed after bounded data pushes
+/public/data/*

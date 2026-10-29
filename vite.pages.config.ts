@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
-    root: fileURLToPath(new URL('./pages', import.meta.url)),
+    root: fileURLToPath(new URL('./web', import.meta.url)),
     envDir: fileURLToPath(new URL('.', import.meta.url)),
     cacheDir: '../.pages-cache',
     base: '/atlas-viario-sp/',
