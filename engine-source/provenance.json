@@ -1,0 +1,8 @@
+{
+  "source": "Canonical source in visualizador-web/backend; copied by tools/build_wasm.sh",
+  "sha256": {
+    "backend/src/engine.c": "84d187563d6d188b661debe0f050c8150af47ce9259f95a51b0344fbbaaebc28",
+    "backend/include/engine.h": "49f41c303d5bc9cd1c9c15ea18fa6eef52243097f9784d45c99e1f30f625e875",
+    "hosting/worker/engine.wasm": "22b49d6dd555938e6dce58bb0c3d85c8d1f54dd62e4537a8f26bee05020abaf4"
+  }
+}
