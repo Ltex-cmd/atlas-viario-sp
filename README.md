@@ -1,4 +1,4 @@
-# Atlas Viário · São Paulo
+# Atlas Viário  São Paulo
 
 Mapa de sinistros de trânsito do estado de São Paulo, com dados reais do Infosiga / Detran-SP e consultas implementadas em C. Projeto acadêmico independente para demonstração de algoritmos e estruturas de dados na USP São Carlos.
 
