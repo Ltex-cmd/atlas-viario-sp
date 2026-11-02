@@ -226,6 +226,8 @@ main { width: 100%; max-width: 1440px; margin: 0 auto; padding: 32px 32px 0; min
 .type-row b { font-weight: 600; }
 .type-row small { text-align: right; color: var(--muted); font-size: 12px; line-height: 16px; }
 .lab-content { margin-top: 32px; }
+.lab-navigation { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 32px; color: var(--green); font-size: 14px; line-height: 20px; }
+.lab-navigation a { text-decoration: underline; text-underline-offset: 4px; }
 .sample-benchmark { margin-bottom: 48px; }
 .sample-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
 .sample-heading p { margin-top: 12px; color: var(--muted); font-size: 16px; line-height: 24px; }
@@ -246,10 +248,49 @@ main { width: 100%; max-width: 1440px; margin: 0 auto; padding: 32px 32px 0; min
 .structure-comparison thead th:first-child { width: 20%; }
 .structure-comparison .method-result dl { grid-template-columns: 1fr; }
 .structure-comparison .method-result dd { margin-top: 8px; text-align: left; font-weight: 400; }
+.structure-guide { margin: 48px 0; }
+.guide-prose { display: grid; gap: 16px; margin-top: 16px; }
+.guide-notation { margin: 24px 0; }
+.guide-notation dl { display: grid; gap: 12px; margin: 16px 0; }
+.guide-notation dl>div { display: grid; grid-template-columns: minmax(4rem,auto) 1fr; gap: 16px; max-width: 65ch; }
+.guide-notation dt { font-weight: 600; }
+.guide-notation dd { margin: 0; color: var(--muted); }
+.guide-controls { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 24px; margin: 32px 0; scroll-margin-top: 24px; }
+.guide-controls label { display: grid; gap: 8px; font-size: 14px; line-height: 20px; font-weight: 600; flex: 1; max-width: 32rem; }
+.guide-controls select { padding: 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font-size: 16px; line-height: 24px; width: 100%; }
+.guide-controls nav { display: flex; align-items: center; gap: 12px; }
+.guide-controls nav span { color: var(--muted); font-size: 14px; line-height: 20px; }
+.guide-controls button { padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; font-weight: 600; }
+.guide-controls button:not(:disabled):hover { background: var(--soft); }
+.guide-entry>h3 { font-size: 24px; line-height: 32px; }
+.guide-entry h4 { margin: 32px 0 0; font-size: 18px; line-height: 28px; font-weight: 600; }
+.guide-complexities table { white-space: normal; table-layout: fixed; }
+.guide-complexities th,.guide-complexities td { vertical-align: top; }
+.guide-complexities thead th:first-child { width: 24%; }
+.guide-complexities thead th:nth-child(2) { width: 24%; }
+.guide-complexities .method-result dl { grid-template-columns: 1fr; }
+.guide-complexities .method-result dd { font-weight: 400; }
+.guide-measured-example { margin-top: 32px; padding: 24px; background: var(--soft); border-radius: 4px; }
+.guide-measured-example h4 { margin-top: 0; }
+.guide-measured-example p { margin-top: 12px; }
+.guide-citations { margin-top: 24px; color: var(--muted); font-size: 14px; line-height: 20px; }
+.guide-citations a { color: var(--green); text-decoration: underline; text-underline-offset: 4px; }
+.guide-code { margin-top: 16px; }
+.guide-code ul { display: grid; gap: 8px; padding-left: 24px; }
+.guide-code code { font-family: inherit; font-size: 14px; line-height: 20px; overflow-wrap: anywhere; }
+.guide-references { margin-top: 40px; }
+.guide-references ul { display: grid; gap: 24px; padding: 0; margin: 24px 0; list-style: none; }
+.guide-references li { scroll-margin-top: 24px; overflow-wrap: anywhere; }
+.guide-references li:target { background: var(--soft); outline: 8px solid var(--soft); border-radius: 4px; }
+.guide-references li>a { display: inline-block; margin-top: 8px; color: var(--green); font-size: 14px; line-height: 20px; }
 @media (max-width: 640px) {
   .sample-heading { flex-direction: column; gap: 8px; }
   .sample-benchmark,.engine-comparison { margin-bottom: 40px; }
   .sample-table th,.sample-table td { padding: 8px 12px; }
+  .guide-controls { align-items: stretch; flex-direction: column; gap: 16px; }
+  .guide-controls label { max-width: none; }
+  .guide-controls nav { justify-content: space-between; }
+  .guide-measured-example { padding: 16px; }
 }
 .lab-intro { display: flex; justify-content: space-between; align-items: center; gap: 32px; }
 .lab-intro h2 { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
