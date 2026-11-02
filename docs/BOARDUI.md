@@ -74,3 +74,5 @@ Testes de UI feitos por um agente Terra 6.1 com raciocínio high em 1280 × 720 
 - Troca de cenário e execução da comparação interativa, com resultados coincidentes nos cinco métodos.
 
 Não houve teste em dispositivo físico. O navegador do subagente não disponibiliza janela visível; a inspeção usou a automação e as capturas do navegador.
+
+A versão integrada também foi conferida no navegador da thread principal: a tabela da amostra contém 13 métodos; trocar de Amostra inteira para Área de São Carlos altera a contagem de 1.000 para cinco sinistros. Em tela estreita, o documento não tem overflow horizontal e somente a tabela oferece rolagem lateral. A tabela BoardUI de estruturas renderiza suas seis linhas. A suíte automatizada terminou com 37 testes aprovados, além da verificação de renderização dos indicadores, checagem de tipos e build do frontend.
