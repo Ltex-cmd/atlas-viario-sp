@@ -148,3 +148,14 @@ Verificação em 02/11/2026:
 - Checagem de tipos, teste de renderização e builds aprovados. Capturas comparáveis: `outputs/boardui-qa-v2/corridor-before.jpg` e `corridor-after.jpg`.
 
 Referência da operação geométrica: [JSTS](https://github.com/bjornharrtell/jsts).
+
+### Integração com a principal
+
+O merge `327910a` reúne o BoardUI (`768e996`) e a principal (`9af03d4`). Foram preservados o guia de 15 estruturas, as referências, os textos revisados sobre cobertura e os arquivos do motor, dos dados e dos benchmarks. Os conflitos em Atlas, StatisticsPanel e EventDetail mantêm os controles BoardUI e as explicações da principal. Terra 6.1 high revisou essa preservação sem alterar o checkout do outro agente.
+
+Verificação em 02/11/2026:
+
+- 58 testes, checagem de tipos, teste de renderização e builds do frontend/API aprovados; os dois testes do benchmark em C passaram com sanitizadores. O workflow do merge também concluiu build e publicação no GitHub Pages.
+- No navegador: filtros municipais, tabela de 8.004 sinistros de São Carlos, abertura de detalhe e retorno com seleção preservada. O guia abre Quadtree (13 de 15); os cinco métodos da consulta atual retornam 34.524 registros e conferências coincidentes.
+- A API publicada devolve os mesmos metadados, estatísticas, registros e detalhes da versão local. Os pontos do relato retornam uma proposta de rota e, após aceitação, 13 sinistros na faixa de 100 m. A API também retorna 11 na faixa de 50 m.
+- A inspeção do build publicado encontrou o botão de percurso com fundo transparente. A importação remota de Manrope, ao ser movida para o início do CSS minificado dentro de `layer(atlas)`, registrava essa camada antes da base do BoardUI. A fonte agora é importada fora da camada; o build compilado voltou a exibir o fundo verde `#2d7164`. A hierarquia e o conteúdo do guia permanecem intactos.
