@@ -1,4 +1,5 @@
 'use client';
+import { Button } from './AtlasControls';
 import { apiURL } from '../lib/api-url';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -173,7 +174,10 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
         </div>)}</div>
         <div className="journey-options"><label>Como ir<select aria-label="Como percorrer o trajeto" value={mode} onChange={e => { invalidate(); setMode(e.target.value as TravelMode); }}><option value="foot">A pé</option><option value="bike">Bicicleta</option><option value="car">Carro</option></select></label><label>Proximidade<select aria-label="Distância dos sinistros até o percurso" value={radius} onChange={e => setRadius(Number(e.target.value))}><option value={25}>Até 25 m</option><option value={50}>Até 50 m</option><option value={100}>Até 100 m</option></select></label><button className="primary-button" disabled={!map || !from || !to || routeBusy} onClick={() => void trace()}>{routeBusy ? 'Traçando percurso…' : 'Traçar percurso'}<ArrowRight size={18}/></button>{(from || to) && <button className="journey-text-button" onClick={clear}>Limpar percurso</button>}</div>
         {picking && map && createPortal(<div className="journey-pick-status" role="status"><span>Toque no mapa para escolher {picking === 'from' ? 'a origem A' : 'o destino B'}.</span><button onClick={() => pick(null)} aria-label="Cancelar escolha no mapa"><X size={18}/></button></div>, map.getContainer())}
-        {routeError && <p className="journey-error" role="alert">{routeError}</p>}
+        {routeError && <div className="journey-error" role="alert"><p>{routeError}</p><div className="journey-error-actions">
+            <Button variant="secondary" size="small" disabled={!map} onClick={() => { setRouteError(''); pick('from'); }}>Ajustar origem no mapa</Button>
+            <Button variant="secondary" size="small" disabled={!map} onClick={() => { setRouteError(''); pick('to'); }}>Ajustar destino no mapa</Button>
+        </div></div>}
         {route && <div className="journey-result" aria-live="polite"><div><strong className={countBusy ? 'journey-counter pending-counter' : 'journey-counter'}>{ready ? `${number(selection.total)} ${selection.total === 1 ? 'sinistro' : 'sinistros'}` : countError ? 'Contagem indisponível' : 'Contando sinistros…'}</strong><p>Até {radius} m do percurso · {period}</p></div><div className="journey-metrics"><span>{distanceLabel(route.distance_m)}</span><span>{durationLabel(route.duration_s)} estimados</span></div><div className="journey-result-actions"><button className="journey-text-button" onClick={() => fit(route)}><LocateFixed size={16}/>Ver percurso</button>{ready && selection.total > 0 && <button className="journey-text-button" onClick={() => setListOpen(v => !v)} aria-expanded={listOpen}>{listOpen ? 'Ocultar registros' : 'Ver registros'}<ArrowRight size={16}/></button>}</div></div>}
         {countError && <div className="journey-error" role="alert"><p>{countError}</p><button className="journey-text-button" onClick={() => setRetry(n => n + 1)}>Tentar contagem novamente</button></div>}
         {ready && selection.total === 0 && <p className="journey-note">Nenhum sinistro com localização disponível foi encontrado nessa faixa e com os filtros aplicados. Isso não significa ausência de risco.</p>}

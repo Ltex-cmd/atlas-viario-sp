@@ -101,3 +101,11 @@ A versão integrada também foi conferida no navegador da thread principal: a ta
 - O arquivo baixado pelo Safari foi inspecionado: `atlas-selected-events-v1`, um registro, ID 2728084, correspondente à seleção testada.
 - Capturas locais estão em `outputs/boardui-qa-v2/`. O gráfico é carregado separadamente; o build ainda avisa sobre o tamanho dos módulos principais e do MapLibre.
 - O percurso de exemplo em São Carlos foi concluído na thread principal: 1,8 km, 24 minutos e três sinistros para janeiro a setembro de 2026, em faixa de 50 m. O console do navegador não registrou erros durante a conferência final.
+
+### Correção da mensagem de rotas
+
+O OSRM pode responder HTTP 400 com `NoRoute` ou `NoSegment`. O adaptador tratava qualquer status HTTP de erro como indisponibilidade, antes de ler o JSON. Agora esses dois casos são apresentados como seleção sem caminho ou sem via próxima, com HTTP 422; limites de uso e falhas do serviço continuam distintos. A UI oferece ações para reposicionar a origem ou o destino.
+
+Referência do contrato: https://project-osrm.org/docs/v5.24.0/api/#general-options
+
+Verificação: a seleção que originou o relato exibiu a mensagem de caminho a pé não encontrado; Ajustar destino ativou a escolha no mapa e Escape a cancelou sem mudar os pontos. O exemplo em São Carlos continuou retornando HTTP 200, 1.812 m, 24 minutos e três sinistros. Foram aprovados 46 testes, checagem de tipos e builds do servidor e do frontend.
