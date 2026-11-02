@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 import { ArrowRight, LocateFixed, MapPin, Search, X } from './icons';
 import { filterKey, type Filters } from './query-state';
-import { distanceLabel, durationLabel, journeyNeedsConfirmation, parseCoordinateInput, routeBounds, routeLatitude, validCoordinate, type Coordinate, type Journey, type Place, type TravelMode } from '../lib/journey';
+import { distanceLabel, durationLabel, journeyNeedsConfirmation, parseCoordinateInput, routeBounds, validCoordinate, type Coordinate, type Journey, type Place, type TravelMode } from '../lib/journey';
 
 type Slot = 'from' | 'to';
 type EventRow = { id: number; date: number; type: number; latitude: number; longitude: number };
@@ -34,6 +34,7 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
     const [proposal, setProposal] = useState<Journey | null>(null);
     const displayRoute = route ?? proposal;
     const [routeBusy, setRouteBusy] = useState(false), [routeError, setRouteError] = useState('');
+    const [bandError, setBandError] = useState(false);
     const [selection, setSelection] = useState<Selection | null>(null), [selectionKey, setSelectionKey] = useState('');
     const [countBusy, setCountBusy] = useState(false), [countError, setCountError] = useState(''), [retry, setRetry] = useState(0);
     const [listOpen, setListOpen] = useState(false);
@@ -59,9 +60,10 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
     useEffect(() => {
         if (!map?.getStyle()) return;
         map.addSource('journey-line', { type: 'geojson', data: empty });
+        map.addSource('journey-corridor', { type: 'geojson', data: empty, tolerance: 0 });
         map.addSource('journey-events', { type: 'geojson', data: empty });
         map.addSource('journey-endpoints', { type: 'geojson', data: empty });
-        map.addLayer({ id: 'journey-band', type: 'line', source: 'journey-line', filter: ['==', ['get', 'kind'], 'route'], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#2d7164', 'line-opacity': 0.16, 'line-width': 1 } });
+        map.addLayer({ id: 'journey-band', type: 'fill', source: 'journey-corridor', paint: { 'fill-color': '#2d7164', 'fill-opacity': 0.16, 'fill-antialias': false } });
         map.addLayer({ id: 'journey-halo', type: 'line', source: 'journey-line', filter: ['==', ['get', 'kind'], 'route'], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 8 } });
         map.addLayer({ id: 'journey-path', type: 'line', source: 'journey-line', filter: ['==', ['get', 'kind'], 'route'], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#2d7164', 'line-width': 4 } });
         map.addLayer({ id: 'journey-connectors', type: 'line', source: 'journey-line', filter: ['==', ['get', 'kind'], 'connector'], paint: { 'line-color': '#2d7164', 'line-width': 2, 'line-dasharray': [2, 2] } });
@@ -86,7 +88,7 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
             // Atlas may already have disposed the map during navigation or refresh.
             if (!map.getStyle()) return;
             for (const id of ['journey-labels', 'journey-endpoints', 'journey-hit', 'journey-events', 'journey-connectors', 'journey-path', 'journey-halo', 'journey-band']) if (map.getLayer(id)) map.removeLayer(id);
-            for (const id of ['journey-endpoints', 'journey-events', 'journey-line']) if (map.getSource(id)) map.removeSource(id);
+            for (const id of ['journey-endpoints', 'journey-events', 'journey-line', 'journey-corridor']) if (map.getSource(id)) map.removeSource(id);
             map.getCanvas().style.cursor = '';
         };
     }, [map]);
@@ -106,12 +108,29 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
         const features: any[] = displayRoute ? [{ type: 'Feature', properties: { kind: 'route' }, geometry: { type: 'LineString', coordinates: displayRoute.coordinates } }] : [];
         if (displayRoute) {
             [from, to].forEach((place, i) => { if (place && displayRoute.waypoints[i].distance_m > 5) features.push({ type: 'Feature', properties: { kind: 'connector' }, geometry: { type: 'LineString', coordinates: [place.coordinates, displayRoute.waypoints[i].coordinates] } }); });
-            const metresPerPixel = 2 * Math.PI * 6371008.8 * Math.cos(routeLatitude(displayRoute.coordinates) * Math.PI / 180) / 512;
-            const width = 2 * radius / metresPerPixel;
-            map.setPaintProperty('journey-band', 'line-width', ['interpolate', ['exponential', 2], ['zoom'], 0, width, 22, width * 2 ** 22]);
         }
         updateSource(map, 'journey-line', { type: 'FeatureCollection', features });
-    }, [map, displayRoute, from, to, radius]);
+    }, [map, displayRoute, from, to]);
+    useEffect(() => {
+        if (!map?.getStyle()) return;
+        let cancelled = false;
+        setBandError(false);
+        updateSource(map, 'journey-corridor', empty);
+        if (!displayRoute) return;
+        // A fresh worker can be terminated even while a complex union is running.
+        // Keep JSTS out of the main bundle and never block map/input interaction.
+        let worker: Worker | undefined;
+        try {
+            worker = new Worker(new URL('../lib/journey-corridor.worker.ts', import.meta.url), { type: 'module' });
+            worker.onmessage = event => {
+                if (!cancelled) updateSource(map, 'journey-corridor', event.data);
+                worker?.terminate();
+            };
+            worker.onerror = () => { if (!cancelled) setBandError(true); worker?.terminate(); };
+            worker.postMessage({ coordinates: displayRoute.coordinates, radius });
+        } catch { worker?.terminate(); setBandError(true); }
+        return () => { cancelled = true; worker?.terminate(); };
+    }, [map, displayRoute, radius]);
     useEffect(() => {
         if (!map?.getStyle()) return;
         updateSource(map, 'journey-events', ready ? { type: 'FeatureCollection', features: (selection?.points || []).map(p => ({ type: 'Feature', properties: { id: p.id }, geometry: { type: 'Point', coordinates: [p.longitude, p.latitude] } })) } : empty);
@@ -199,6 +218,7 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
         </div>}
         {route && <div className="journey-result" aria-live="polite"><div><strong className={countBusy ? 'journey-counter pending-counter' : 'journey-counter'}>{ready ? `${number(selection.total)} ${selection.total === 1 ? 'sinistro' : 'sinistros'}` : countError ? 'Contagem indisponível' : 'Contando sinistros…'}</strong><p>Até {radius} m do percurso · {period}</p></div><div className="journey-metrics"><span>{distanceLabel(route.distance_m)}</span><span>{durationLabel(route.duration_s)} estimados</span></div><div className="journey-result-actions"><button className="journey-text-button" onClick={() => fit(route)}><LocateFixed size={16}/>Ver percurso</button>{ready && selection.total > 0 && <button className="journey-text-button" onClick={() => setListOpen(v => !v)} aria-expanded={listOpen}>{listOpen ? 'Ocultar registros' : 'Ver registros'}<ArrowRight size={16}/></button>}</div></div>}
         {countError && <div className="journey-error" role="alert"><p>{countError}</p><button className="journey-text-button" onClick={() => setRetry(n => n + 1)}>Tentar contagem novamente</button></div>}
+        {bandError && <p className="journey-note" role="status">Não foi possível desenhar a faixa sombreada. A contagem continua usando a distância de proximidade selecionada.</p>}
         {ready && selection.total === 0 && <p className="journey-note">Nenhum sinistro com localização disponível foi encontrado nessa faixa e com os filtros aplicados. Isso não significa ausência de risco.</p>}
         {ready && selection.total > (selection.map_shown || 0) && <p className="journey-note">O mapa mostra os primeiros {number(selection.map_shown || 0)} de {number(selection.total)} registros. A contagem inclui todos e a lista permite consultar os demais.</p>}
         {route && route.waypoints.some(w => w.distance_m > 5) && <p className="journey-note">A rota foi ajustada à rede de ruas. {route.waypoints.map((w, i) => w.distance_m > 5 ? `${i ? 'Destino B' : 'Origem A'} a ${distanceLabel(w.distance_m)} do ponto escolhido.` : '').filter(Boolean).join(' ')} As linhas pontilhadas não confirmam um caminho de acesso e não entram na distância, no tempo ou na contagem de sinistros.</p>}

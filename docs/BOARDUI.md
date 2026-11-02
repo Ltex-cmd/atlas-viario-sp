@@ -130,3 +130,21 @@ Verificação em 02/11/2026:
 - Evidências locais: `outputs/route-diagnosis/` e `outputs/boardui-qa-v2/route-proposal.jpg`.
 
 Referências: [opções de associação a vias do OSRM](https://project-osrm.org/docs/v5.24.0/api/#general-options) e [condições do servidor FOSSGIS](https://routing.openstreetmap.de/about.html).
+
+
+### Faixa de proximidade sem artefatos de sobreposição
+
+A camada `journey-band` usava uma linha larga com opacidade. As faces sobrepostas nas curvas criavam triângulos e áreas mais escuras; o problema foi reproduzido no exemplo de São Carlos, com proximidade de 100 m.
+
+A faixa agora é uma única área de buffer com as interseções unidas, preenchida pelo MapLibre. A geometria usa a mesma projeção local e o mesmo raio da seleção C/Wasm. As pontas e curvas são arredondadas, com aproximação máxima de 3,1 cm no raio de 100 m. Buracos fora da faixa permanecem vazios. A rota enviada à contagem não foi alterada, e os acessos pontilhados continuam excluídos.
+
+O cálculo usa JSTS 2.12.1 (licença EDL-1.0 ou EPL-1.0) em um Web Worker separado, carregado apenas ao desenhar a faixa. Trocar rota/raio ou sair do painel encerra o cálculo anterior; respostas antigas não substituem a seleção atual. Terra 6.1 high identificou o risco de bloqueio na primeira implementação síncrona, e revisou a migração e o cancelamento do worker. O worker gerado ocupa aproximadamente 230 kB sem compressão, fora do módulo principal.
+
+Verificação em 02/11/2026:
+
+- 58 testes aprovados, incluindo comparação da área desenhada com o C/Wasm real em cruzamentos, laços e curvas em U, com 441 pontos por cenário e raios de 25, 50 e 100 m.
+- Testes de ida/volta sobre o mesmo segmento, vértices repetidos, extremidades arredondadas, buracos e preservação da rota original.
+- Na interface, o exemplo manteve três sinistros nos três limites. Trocas rápidas de limite e zoom foram verificadas; as manchas triangulares de 100 m desapareceram.
+- Checagem de tipos, teste de renderização e builds aprovados. Capturas comparáveis: `outputs/boardui-qa-v2/corridor-before.jpg` e `corridor-after.jpg`.
+
+Referência da operação geométrica: [JSTS](https://github.com/bjornharrtell/jsts).
