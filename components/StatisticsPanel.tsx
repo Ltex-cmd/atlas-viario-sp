@@ -1,11 +1,14 @@
+'use client';
+import { lazy, Suspense } from 'react';
+import type { Filters } from './query-state';
+const MonthlyChart = lazy(() => import('./MonthlyChart'));
 import { StatCards } from './boardui/application/dashboard/stat-cards';
 import { Skeleton } from './boardui/base/skeleton/skeleton';
 import { CarFront, AlertCircle, Users, MapPin } from './icons';
 const fmt = (n: number) => n.toLocaleString('pt-BR');
-const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-export default function StatisticsPanel({ stats, ready, error, onRetry, meta, year, dateEnd, partial }: {
-    stats: any; ready: boolean; error: string; onRetry: () => void; meta: any; year: string; dateEnd: string; partial: boolean;
+export default function StatisticsPanel({ stats, ready, error, onRetry, meta, year, dateEnd, partial, filters }: {
+    stats: any; ready: boolean; error: string; onRetry: () => void; meta: any; year: string; dateEnd: string; partial: boolean; filters?: Filters;
 }) {
     const percentage = (n: number) => (stats.total ? n / stats.total * 100 : 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
     return <section className="summary-section" aria-labelledby="summary-title" aria-busy={!ready && !error}>
@@ -22,15 +25,11 @@ export default function StatisticsPanel({ stats, ready, error, onRetry, meta, ye
                 { icon: MapPin, label: 'Com localização', value: fmt(stats.located), unit: 'eventos', description: `${percentage(stats.located)}% dos registros com coordenadas` },
             ]}/>
             {stats.total === 0 ? <p className="empty-statistics">Nenhum sinistro corresponde aos filtros selecionados.</p> : <div className="bottom-grid">
-                <section className="chart-panel"><div className="section-title"><h3>Sinistros por mês</h3><span className="muted">{year || 'Todos os anos'}</span></div>
-                    <div className="month-chart">{months.map((name, i) => {
-                        const n = stats.months[i], max = Math.max(1, ...stats.months);
-                        const outsideCoverage = partial && i >= Number(dateEnd.slice(5, 7));
-                        return <div key={name} tabIndex={0} className={'month-column ' + (outsideCoverage ? 'no-data' : '')} title={outsideCoverage ? `${name}: fora da cobertura` : `${name}: ${fmt(n)} ${n===1?'sinistro':'sinistros'}`}>
-                            <div className="bar-track"><div className="bar" style={{ height: `${Math.max(n ? 3 : 0, n / max * 100)}%` }}><span>{fmt(n)}</span></div></div><span>{name}</span>
-                        </div>;
-                    })}</div>
-                </section>
+                <Suspense fallback={<div className="atlas-chart-placeholder" role="status">Carregando gráfico…</div>}>
+                    <MonthlyChart key={JSON.stringify(filters ?? year)} months={stats.months}
+                        filters={filters ?? { ano: year, municipio: '', tipo: '', via: '', transporte: '', registro: '', inicio: '', fim: '' }}
+                        dateStart={String(meta?.date_start ?? 20150101).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3')} dateEnd={dateEnd}/>
+                </Suspense>
                 <section className="types-panel"><h3>Tipos de sinistro</h3><div className="type-list">{meta?.types.map((name: string, i: number) => ({ name, n: stats.types[i] })).sort((a: any, b: any) => b.n - a.n).map((item: any) => <div className="type-row" key={item.name}><span className="type-name">{item.name}<i style={{ width: `${item.n / stats.total * 100}%` }}/></span><b>{fmt(item.n)}</b><small>{percentage(item.n)}%</small></div>)}</div></section>
             </div>}
         </>}

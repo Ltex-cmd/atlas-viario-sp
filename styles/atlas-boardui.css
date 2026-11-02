@@ -72,3 +72,72 @@
   .atlas-app .topbar nav button { flex: 1; padding: 8px; }
   .atlas-app .page-actions>button { padding-inline: 8px; }
 }
+
+/* Atlas compositions of the free BoardUI blocks. */
+:root { --atlas-chart-previous: color-mix(in srgb, var(--green) 40%, var(--surface));
+  --color-notification-information-background: var(--soft);
+  --color-notification-information-foreground: var(--green);
+  --color-notification-success-background: var(--soft);
+  --color-notification-success-foreground: var(--green); }
+.atlas-active-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin: -8px 0 24px; }
+.atlas-filter-tag { background: var(--soft); color: var(--green); min-height: 32px; height: auto; }
+.atlas-filter-tag button { min-width: 24px; min-height: 24px; }
+.atlas-inline-notification { margin-bottom: 24px; }
+.atlas-detail-drawer { background: var(--surface); min-width: 0; }
+.atlas-detail-content { color: var(--ink); outline: none; padding-bottom: 16px; min-width: 0; }
+.atlas-detail-content h2 { margin-top: 16px; }
+.atlas-detail-content h2:focus { outline: none; }
+.atlas-detail-content .event-type { margin-top: 8px; }
+.atlas-detail-content .event-time { margin-top: 16px; }
+.atlas-locate-event { margin: 16px 0; width: 100%; }
+.atlas-back-to-group { margin-bottom: 16px; }
+.atlas-record-toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; align-items: center; }
+.atlas-record-toolbar p { font-size: 14px; line-height: 20px; }
+.atlas-table-scope { margin: 8px 0 16px; color: var(--muted); font-size: 12px; line-height: 16px; }
+.atlas-table-scroll { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+.atlas-table-mobile-hint { display: none; font-size: 12px; line-height: 16px; color: var(--muted); margin-bottom: 8px; }
+.atlas-inner-table { overflow: visible; }
+.atlas-record-table .bui-table { min-width: 720px; }
+.atlas-record-table .bui-table th,.atlas-record-table .bui-table td { padding: 12px; }
+.atlas-record-table .bui-table tbody th { background: transparent; border: 0; }
+.atlas-record-table .bui-table tbody tr:hover { background: var(--paper); }
+.atlas-record-table .bui-table .atlas-row-selected { background: var(--soft); }
+.atlas-sort-button { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; padding: 4px 0; }
+.atlas-sort-button svg { width: 16px; height: 16px; }
+.atlas-sort-ascending { transform: rotate(180deg); }
+.atlas-table-pagination { padding-top: 16px; }
+.atlas-table-pagination ul { padding: 0; margin: 0; list-style: none; }
+.atlas-record-loading { display: grid; gap: 16px; }
+.atlas-record-skeleton { height: 48px; }
+.atlas-record-empty { padding: 24px 0; }
+.atlas-record-empty p { color: var(--muted); margin-top: 8px; }
+.atlas-monthly-section { min-width: 0; background: var(--surface); padding: 24px; border-radius: 8px; }
+.atlas-chart-controls { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+.atlas-chart-controls>span,.atlas-chart-footnote,.atlas-comparison-note { font-size: 12px; line-height: 16px; color: var(--muted); }
+.atlas-chart-controls button[aria-pressed=true] { background: var(--soft); color: var(--green); }
+.atlas-comparison-note { margin-bottom: 16px; }
+.atlas-chart-heading { display: flex; gap: 16px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+.atlas-chart-value { display: flex; gap: 12px; align-items: center; margin: 8px 0; }
+.atlas-chart-value strong { font-size: 30px; line-height: 36px; font-weight: 600; }
+.atlas-chart-heading p { font-size: 12px; line-height: 16px; color: var(--muted); }
+.atlas-chart-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; line-height: 16px; }
+.atlas-chart-legend span { display: flex; align-items: center; gap: 8px; }
+.atlas-chart-legend i { height: 8px; width: 8px; border-radius: 2px; background: var(--green); }
+.atlas-chart-legend .previous { background: var(--atlas-chart-previous); }
+.atlas-monthly-plot { width: 100%; height: 240px; margin: 16px 0; }
+.atlas-chart-tooltip { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font-size: 12px; line-height: 20px; }
+.atlas-chart-footnote { margin-top: 16px; }
+.atlas-monthly-values { font-size: 12px; line-height: 20px; }
+.atlas-monthly-values summary { cursor: pointer; color: var(--green); padding: 8px 0; }
+.atlas-monthly-values table { margin-top: 8px; width: 100%; }
+.atlas-monthly-values caption { text-align: left; margin-bottom: 8px; }
+.atlas-monthly-values th,.atlas-monthly-values td { padding: 8px; text-align: left; }
+.atlas-chart-placeholder { min-height: 320px; display: grid; place-items: center; }
+@media(max-width:640px) {
+  .atlas-monthly-section { padding: 16px; }
+  .atlas-chart-value strong { font-size: 24px; line-height: 32px; }
+  .atlas-detail-body { padding-inline: 16px; }
+  .atlas-table-mobile-hint { display: block; }
+  .atlas-record-toolbar { align-items: flex-start; }
+  .atlas-detail-content .casualty-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}

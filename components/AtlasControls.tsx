@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, type ReactNode } from 'react';
+import { MotionConfig } from 'motion/react';
 import { parseDate } from '@internationalized/date';
 import { Button } from './boardui/base/buttons/button';
 import { ComboBox, ComboBoxItem } from './boardui/base/combobox/combobox';
@@ -15,7 +16,7 @@ import { findCity, type Filters } from './query-state';
 export { Button };
 
 export function AtlasUI({ children }: { children: ReactNode }) {
-    return <DirectionProvider locale="pt-BR">{children}</DirectionProvider>;
+    return <MotionConfig reducedMotion="user"><DirectionProvider locale="pt-BR">{children}</DirectionProvider></MotionConfig>;
 }
 
 type Choice = readonly [string, string];

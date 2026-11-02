@@ -6,9 +6,72 @@
   "license_file": "vendor/boardui.LICENSE",
   "items": [
     {
+      "name": "avatar",
+      "source_files": [
+        "components/base/avatar/avatar.tsx"
+      ]
+    },
+    {
+      "name": "button",
+      "source_files": [
+        "components/base/buttons/button.tsx"
+      ]
+    },
+    {
+      "name": "checkbox",
+      "source_files": [
+        "components/base/checkbox/checkbox-glyph.tsx",
+        "components/base/checkbox/checkbox.tsx"
+      ]
+    },
+    {
+      "name": "chevrons",
+      "source_files": [
+        "components/foundations/icons/chevrons.tsx"
+      ]
+    },
+    {
+      "name": "chip",
+      "source_files": [
+        "components/base/badges/chip.tsx"
+      ]
+    },
+    {
+      "name": "close-button",
+      "source_files": [
+        "components/base/buttons/close-button.tsx"
+      ]
+    },
+    {
+      "name": "combobox",
+      "source_files": [
+        "components/base/combobox/combobox.tsx",
+        "components/base/dropdown/menu-styles.ts"
+      ]
+    },
+    {
       "name": "cx",
       "source_files": [
         "utils/cx.ts"
+      ]
+    },
+    {
+      "name": "data-table",
+      "source_files": [
+        "components/application/docs/examples/data-table-example.tsx"
+      ]
+    },
+    {
+      "name": "date-picker",
+      "source_files": [
+        "components/base/date-picker/date-picker.tsx",
+        "components/base/date-picker/shared.tsx"
+      ]
+    },
+    {
+      "name": "direction",
+      "source_files": [
+        "components/foundations/direction/direction.tsx"
       ]
     },
     {
@@ -18,27 +81,22 @@
       ]
     },
     {
-      "name": "theme",
+      "name": "drawer",
       "source_files": [
-        "styles/theme.css"
+        "components/base/drawer/drawer.tsx"
       ]
     },
     {
-      "name": "typography",
+      "name": "dropdown",
       "source_files": [
-        "styles/typography.css"
+        "components/base/dropdown/dropdown.tsx",
+        "components/base/dropdown/menu-styles.ts"
       ]
     },
     {
       "name": "globals",
       "source_files": [
         "styles/globals.css"
-      ]
-    },
-    {
-      "name": "button",
-      "source_files": [
-        "components/base/buttons/button.tsx"
       ]
     },
     {
@@ -56,15 +114,39 @@
       ]
     },
     {
-      "name": "chevrons",
+      "name": "modal",
       "source_files": [
-        "components/foundations/icons/chevrons.tsx"
+        "components/base/modal/modal.tsx"
       ]
     },
     {
-      "name": "use-dismiss-on-outside-press",
+      "name": "notification",
       "source_files": [
-        "utils/use-dismiss-on-outside-press.ts"
+        "components/base/notification/notification.tsx"
+      ]
+    },
+    {
+      "name": "orders-chart-card",
+      "source_files": [
+        "components/application/dashboard/orders-chart-card.tsx"
+      ]
+    },
+    {
+      "name": "pagination",
+      "source_files": [
+        "components/base/pagination/pagination.tsx"
+      ]
+    },
+    {
+      "name": "scroll-fade",
+      "source_files": [
+        "components/foundations/scroll-fade/scroll-fade.tsx"
+      ]
+    },
+    {
+      "name": "segmented-control",
+      "source_files": [
+        "components/base/segmented-control/segmented-control.tsx"
       ]
     },
     {
@@ -75,41 +157,9 @@
       ]
     },
     {
-      "name": "direction",
+      "name": "skeleton",
       "source_files": [
-        "components/foundations/direction/direction.tsx"
-      ]
-    },
-    {
-      "name": "scroll-fade",
-      "source_files": [
-        "components/foundations/scroll-fade/scroll-fade.tsx"
-      ]
-    },
-    {
-      "name": "combobox",
-      "source_files": [
-        "components/base/combobox/combobox.tsx",
-        "components/base/dropdown/menu-styles.ts"
-      ]
-    },
-    {
-      "name": "template-copy",
-      "source_files": [
-        "components/foundations/template-copy/template-copy.tsx"
-      ]
-    },
-    {
-      "name": "date-picker",
-      "source_files": [
-        "components/base/date-picker/date-picker.tsx",
-        "components/base/date-picker/shared.tsx"
-      ]
-    },
-    {
-      "name": "close-button",
-      "source_files": [
-        "components/base/buttons/close-button.tsx"
+        "components/base/skeleton/skeleton.tsx"
       ]
     },
     {
@@ -119,15 +169,15 @@
       ]
     },
     {
-      "name": "modal",
+      "name": "stat-cards",
       "source_files": [
-        "components/base/modal/modal.tsx"
+        "components/application/dashboard/stat-cards.tsx"
       ]
     },
     {
-      "name": "drawer",
+      "name": "status-dot",
       "source_files": [
-        "components/base/drawer/drawer.tsx"
+        "components/base/badges/status-dot.tsx"
       ]
     },
     {
@@ -137,9 +187,27 @@
       ]
     },
     {
-      "name": "chip",
+      "name": "tag-group",
       "source_files": [
-        "components/base/badges/chip.tsx"
+        "components/base/tag-group/tag-group.tsx"
+      ]
+    },
+    {
+      "name": "template-copy",
+      "source_files": [
+        "components/foundations/template-copy/template-copy.tsx"
+      ]
+    },
+    {
+      "name": "theme",
+      "source_files": [
+        "styles/theme.css"
+      ]
+    },
+    {
+      "name": "toast",
+      "source_files": [
+        "components/base/toast/toast.tsx"
       ]
     },
     {
@@ -149,21 +217,21 @@
       ]
     },
     {
-      "name": "stat-cards",
+      "name": "typography",
       "source_files": [
-        "components/application/dashboard/stat-cards.tsx"
+        "styles/typography.css"
       ]
     },
     {
-      "name": "skeleton",
+      "name": "use-count-up",
       "source_files": [
-        "components/base/skeleton/skeleton.tsx"
+        "hooks/use-count-up.ts"
       ]
     },
     {
-      "name": "segmented-control",
+      "name": "use-dismiss-on-outside-press",
       "source_files": [
-        "components/base/segmented-control/segmented-control.tsx"
+        "utils/use-dismiss-on-outside-press.ts"
       ]
     }
   ]

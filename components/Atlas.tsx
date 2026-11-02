@@ -3,6 +3,10 @@ import { apiURL } from '../lib/api-url';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ArrowUpRight, ArrowRight, ArrowDownToLine, Search, SlidersHorizontal, X, ChevronDown, RotateCcw, LocateFixed, Plus, Minus, Info, Check, Route, FlaskConical, AlertCircle } from './icons';
 import EventDetail from './EventDetail';
+import ActiveFilters from './ActiveFilters';
+import EventGroupTable from './EventGroupTable';
+import { toast, Toaster } from './boardui/base/toast/toast';
+import { Notification } from './boardui/base/notification/notification';
 import JourneyPanel from './JourneyPanel';
 import DetailDialog from './DetailDialog';
 import BenchmarkPanel from './BenchmarkPanel';
@@ -33,7 +37,7 @@ async function json(url: string, signal?: AbortSignal) {
     return o;
 }
 export default function Atlas() {
-    const [meta, setMeta] = useState<any>(null), [stats, setStats] = useState<any>(null), [draft, setDraft] = useState(initial), [active, setActive] = useState(initial), [cityText, setCityText] = useState(''), [tab, setTab] = useState('map'), [error, setError] = useState(''), [loading, setLoading] = useState(true), [mapLoading, setMapLoading] = useState(true), [mobile, setMobile] = useState(false), [mapMode,setMapMode]=useState<MapMode>('groups'),[showOriginal,setShowOriginal]=useState(false),[roadReach,setRoadReach]=useState(300),[roadState,setRoadState]=useState<any>({reason:'loading'}), [mapInfo, setMapInfo] = useState<any>({}), [detail, setDetail] = useState<any>(null), [detailLoading, setDetailLoading] = useState(false), [searchId, setSearchId] = useState(''), [bench, setBench] = useState<any>(null), [native, setNative] = useState<any>(null), [benchmarking, setBenchmarking] = useState(false), [mapReady, setMapReady] = useState(false), [notice, setNotice] = useState(''), [group, setGroup] = useState<any>(null), [groupLoading, setGroupLoading] = useState(false), [mapSelection, setMapSelection] = useState<any>(null), [cameraZoom, setCameraZoom] = useState(5), [statsKey, setStatsKey] = useState(''), [dialogError, setDialogError] = useState('');
+    const [meta, setMeta] = useState<any>(null), [stats, setStats] = useState<any>(null), [draft, setDraft] = useState(initial), [active, setActive] = useState(initial), [cityText, setCityText] = useState(''), [tab, setTab] = useState('map'), [error, setError] = useState(''), [loading, setLoading] = useState(true), [mapLoading, setMapLoading] = useState(true), [mobile, setMobile] = useState(false), [mapMode,setMapMode]=useState<MapMode>('groups'),[showOriginal,setShowOriginal]=useState(false),[roadReach,setRoadReach]=useState(300),[roadState,setRoadState]=useState<any>({reason:'loading'}), [mapInfo, setMapInfo] = useState<any>({}), [detail, setDetail] = useState<any>(null), [detailLoading, setDetailLoading] = useState(false), [searchId, setSearchId] = useState(''), [bench, setBench] = useState<any>(null), [native, setNative] = useState<any>(null), [benchmarking, setBenchmarking] = useState(false), [mapReady, setMapReady] = useState(false), [group, setGroup] = useState<any>(null), [groupLoading, setGroupLoading] = useState(false), [mapSelection, setMapSelection] = useState<any>(null), [cameraZoom, setCameraZoom] = useState(5), [statsKey, setStatsKey] = useState(''), [dialogError, setDialogError] = useState('');
     const mapRef = useRef<MapLibreMap | null>(null), mapElement = useRef<HTMLDivElement>(null), mapAbort = useRef<AbortController | null>(null), activeRef = useRef(active), lastGeo = useRef<any>(null), statsAbort = useRef<AbortController | null>(null), detailAbort = useRef<AbortController | null>(null), groupAbort = useRef<AbortController | null>(null), displayedFilters = useRef<Filters>(active), zoomTarget = useRef<number | null>(null), viewportRef = useRef<Viewport | null>(null), modeRef=useRef<MapMode>(mapMode),showOriginalRef=useRef(showOriginal),roadOverlay=useRef<RoadDensityController|null>(null), benchmarkAbort = useRef<AbortController | null>(null);
     const [statsError,setStatsError]=useState(''),[statsRetry,setStatsRetry]=useState(0),[filterError,setFilterError]=useState('');
     const [journeyOpen,setJourneyOpen]=useState(false);
@@ -164,7 +168,7 @@ export default function Atlas() {
                 map.addLayer({ id: 'selected-event', type: 'circle', source: 'selected-event', paint: { 'circle-radius': 12, 'circle-color': '#ffffff', 'circle-opacity': 0.2, 'circle-stroke-width': 3, 'circle-stroke-color': '#1b6d63' } });
             }
         }, 100);
-        setNotice('Localização oficial do registro destacada no mapa.');
+        toast.info('Localização oficial do registro destacada no mapa.');
     };
     const updateMap = useCallback(async () => {
         const map = mapRef.current;
@@ -273,7 +277,7 @@ export default function Atlas() {
                     }
                     else {
                         const selected=resolvePointSelection(features,lastGeo.current);
-                        if(!selected){setNotice('O mapa está atualizando. Aguarde e selecione novamente.');return;}
+                        if(!selected){toast.info('O mapa está atualizando. Aguarde e selecione novamente.');return;}
                         if(selected.ids.length===1){setGroup(null);showDetail(selected.ids[0]);}
                         else showGroup(selected,filters);
                     }
@@ -318,7 +322,7 @@ export default function Atlas() {
     const selectMode=(mode:MapMode)=>{
         setMapMode(mode);setMapSelection(null);
         if(mode==='roads'&&active.via!=='1'){
-            const filters={...active,via:'1'};setActive(filters);setDraft(d=>({...d,via:'1'}));setNotice('Filtro de estradas e rodovias aplicado.');
+            const filters={...active,via:'1'};setActive(filters);setDraft(d=>({...d,via:'1'}));toast.info('Filtro de estradas e rodovias aplicado.');
         }
     };
     useEffect(() => {
@@ -327,12 +331,6 @@ export default function Atlas() {
         if (tab === 'lab' && !native)
             json('/api/v1/native-benchmarks').then(setNative).catch(e => setError(e.message));
     }, [tab, native]);
-    useEffect(() => {
-        if (!notice)
-            return;
-        const t = setTimeout(() => setNotice(''), 5000);
-        return () => clearTimeout(t);
-    }, [notice]);
     const change = (k: keyof Filters, v: string) => {setFilterError('');setDraft(d => ({...d,[k]:v}));};
     const apply = () => {
         const dateError = validateDates(draft, dateStart, dateEnd);
@@ -354,6 +352,15 @@ export default function Atlas() {
         setBench(null);
     };
     const reset = () => { setMapMode('groups'); const f = { ...initial, ano: String(meta?.years.at(-1)?.year || initial.ano) }; setMapSelection(null); closeDetails(); setDraft(f); setActive(f); setCityText(''); setError(''); setFilterError(''); setBench(null); };
+    const removeFilters = (keys: (keyof Filters)[]) => {
+        const next = { ...active };
+        keys.forEach(key => { next[key] = ''; });
+        if (keys.includes('via') && mapMode === 'roads') setMapMode('groups');
+        setMapSelection(null); closeDetails(); setActive(next); setDraft(next);
+        setCityText(meta?.cities.find((city: any) => String(city.code) === next.municipio)?.name ?? '');
+        setFilterError(''); setBench(null);
+        toast.info(keys.length === 1 ? 'Filtro removido. Atualizando a consulta.' : 'Filtros removidos. Atualizando a consulta.', { id: 'filters' });
+    };
     const runBenchmark = async () => {
         if (!snapshotReady)
             return;
@@ -393,7 +400,7 @@ export default function Atlas() {
             a.click();
             a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
-            setNotice('Resumo exportado: filtros, estatísticas e mapa da área exibida.');
+            toast.success('Resumo exportado: filtros, estatísticas e mapa da área exibida.');
         }
         catch (e: any) {
             setError(e.message);
@@ -414,8 +421,8 @@ export default function Atlas() {
    error={filterError} dateStart={dateStart} dateEnd={dateEnd}/>
 
  <main id="conteudo" tabIndex={-1}><div className="page-heading"><h1>{tab==='map'?'Mapa de sinistros':tab==='lab'?'Comparação de algoritmos':'Dados e metodologia'}</h1>{tab!=='about'&&<div className="page-actions"><Button variant="secondary" leadingIcon={SlidersHorizontal} className="filter-toggle" onClick={()=>{setFilterError('');setMobile(true);}} aria-label="Abrir filtros" aria-expanded={mobile}>Filtros</Button><Button variant="secondary" leadingIcon={ArrowDownToLine} hidden={journeyOpen&&tab==='map'} className="export-button" onClick={download} disabled={!snapshotReady} aria-label="Exportar resumo da consulta em JSON" title={snapshotReady?'Baixar filtros, estatísticas e dados do mapa em JSON':'Aguarde a atualização dos dados'}>Exportar</Button></div>}</div>
- {error && <div role="alert" className="error"><AlertCircle size={16}/>{error}<button onClick={() => setError('')} aria-label="Fechar erro"><X size={15}/></button></div>}
- {tab!=='about'&&<div className="context-line"><span className="region-name">{selectedCity?labelCase(selectedCity.name):'Estado de São Paulo'}</span><span className="period">{period}</span>{partial&&<span className="partial">Ano incompleto</span>}{[['tipo',meta?.types],['transporte',meta?.transports],['via',meta?.roads],['registro',meta?.registrations]].map(([key,labels]:any)=>active[key as keyof Filters]!==''&&<span key={key}>{labels?.[Number(active[key as keyof Filters])]}</span>)}</div>}
+ {error && <Notification key={error} status="error" className="atlas-inline-notification" title="Não foi possível concluir a consulta" description={error} closeLabel="Fechar aviso" onDismiss={()=>setError('')} actions={[{label:'Tentar novamente',variant:'secondary',onClick:()=>{setStatsRetry(n=>n+1);updateMap();setError('');}}]}/>}
+ {tab!=='about'&&<><div className="context-line"><span className="region-name">{selectedCity?labelCase(selectedCity.name):'Estado de São Paulo'}</span><span className="period">{period}</span>{partial&&<span className="partial">Ano incompleto</span>}</div><ActiveFilters filters={active} meta={meta} onRemove={removeFilters}/></>}
  {tab!=='about' && periodStart < '2019-01-01' && <p className="coverage-warning">2015 a 2018 incluem apenas sinistros fatais. A cobertura ampliada a partir de 2019 limita comparações diretas entre esses períodos.</p>}
 
  <section hidden={tab!=='map'} className="map-section"><div className="map-toolbar"><div className="map-title"><b>{journeyOpen?'Sinistros próximos ao percurso':mapLoading?'Atualizando mapa':fmt(mapInfo.count)+(mapInfo.count===1?' sinistro na área':' sinistros na área')}</b></div><div className="map-actions"><button className="area-list-button journey-toggle" onClick={toggleJourney} aria-expanded={journeyOpen}><Route size={18}/>{journeyOpen?'Voltar ao mapa':'Traçar percurso'}</button><button hidden={journeyOpen} className="area-list-button" disabled={mapLoading || !mapInfo.count} onClick={() => showGroup({ bbox: mapInfo.bbox, count: mapInfo.count, area: true }, displayedFilters.current)}>Ver lista da área</button><div hidden={journeyOpen}><AtlasSegments className="atlas-map-switch" label="Visualização do mapa" value={mapMode} onChange={value=>selectMode(value as MapMode)} options={[["groups","Agrupamentos"],["points","Pontos"],["density","Densidade"],["roads","Nas rodovias"]]}/></div></div></div>{!journeyOpen&&mapMode==='roads'&&<div className="road-analysis-controls"><label>Alcance<select aria-label="Alcance da difusão nas rodovias" value={roadReach} onChange={e=>setRoadReach(Number(e.target.value))}><option value={100}>100 m</option><option value={300}>300 m</option><option value={600}>600 m</option></select></label><label className="road-point-toggle"><input type="checkbox" checked={showOriginal} onChange={e=>setShowOriginal(e.target.checked)}/>Pontos originais</label></div>}
@@ -431,14 +438,24 @@ export default function Atlas() {
             else
                 setError('Informe um identificador numérico.');
         }}><Input aria-label="Buscar sinistro por ID" placeholder="Buscar sinistro por ID" value={searchId} onChange={setSearchId} leadingIcon={Search}/><Button type="submit" variant="ghost" iconOnly leadingIcon={ArrowRight} aria-label="Buscar sinistro"/></form></div><div className="map-footer"><span><Info size={16}/>{statisticsReady?`${fmt(stats.unlocated)} ${stats.unlocated===1?'sinistro dos filtros selecionados não aparece':'sinistros dos filtros selecionados não aparecem'} no mapa por falta de localização aceita.`:statsError?'Estatísticas indisponíveis.':'Carregando estatísticas…'}</span></div></section>
- {tab==='map'&&<StatisticsPanel stats={stats} ready={statisticsReady} error={statsError} onRetry={()=>setStatsRetry(n=>n+1)} meta={meta} year={active.ano} dateEnd={dateEnd} partial={partial}/>}
+ {tab==='map'&&<StatisticsPanel stats={stats} ready={statisticsReady} error={statsError} onRetry={()=>setStatsRetry(n=>n+1)} meta={meta} filters={active} year={active.ano} dateEnd={dateEnd} partial={partial}/>}
  {tab === 'lab' && <div className="lab-content"><SampleBenchmarkPanel/><section className="lab-intro"><div><h2>Consulta atual</h2><p>Compare os métodos com os filtros e a última área selecionada no mapa. {snapshotReady ? `Área selecionada: ${fmt(mapInfo.count)} ${mapInfo.count===1?'sinistro':'sinistros'}.` : 'Aguarde a consulta da área terminar.'}</p></div><Button leadingIcon={FlaskConical} className="primary-button" onClick={runBenchmark} disabled={benchmarking || !snapshotReady}>{benchmarking ? 'Comparando…' : 'Comparar métodos'}</Button></section>{bench&&<BenchmarkResults result={bench}/>}<details className="request-details map-request-details"><summary>Detalhes da última consulta do mapa</summary>{snapshotReady?<><dl><div><dt>Tempo da resposta</dt><dd>{fmt(Math.round(mapInfo.ms))} ms</dd></div><div><dt>Tamanho do JSON</dt><dd>{(mapInfo.bytes/1024).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})} KiB</dd></div><div><dt>Sinistros na área</dt><dd>{fmt(mapInfo.count)}</dd></div></dl><p>O tempo inclui a comunicação com o servidor. As estatísticas consideram os filtros; o mapa considera também a área exibida.</p></>:<p>Aguarde a consulta do mapa terminar.</p>}</details>
  <BenchmarkPanel data={native} meta={meta}/></div>}
  {tab === 'about' && <div className="about-grid"><section className="about-main"><h2>Fonte e cobertura</h2><p>O Atlas Viário é um projeto acadêmico independente para estudar consultas geográficas, algoritmos e estruturas de dados. Os registros vêm do Infosiga / Detran-SP e foram preservados nos arquivos do projeto universitário.</p><div className="coverage-list">{meta?.coverage_notes.map((n: string, i: number) => <div key={n}><p>{n}</p></div>)}</div><a className="text-link" href="https://infosiga.detran.sp.gov.br/mapas/" target="_blank" rel="noreferrer">Consultar o InfoMapa oficial <ArrowUpRight size={16}/></a></section><section className="about-tech"><h2>Processamento dos dados</h2><p>O leitor e a lista sequencial do projeto original processam os dados em lotes. Registros compactos e índices permitem consultar apenas os candidatos relevantes.</p><ol><li><b>Fonte preservada</b><span>CSVs originais em leitura; integridade por SHA-256.</span></li><li><b>Motor escrito em C</b><span>Servidor nativo com CivetWeb; no Sites, o mesmo motor executa em WebAssembly no servidor.</span></li><li><b>Mapa sob demanda</b><span>O navegador recebe somente agrupamentos ou pontos da região visível, com filtros aplicados.</span></li></ol><div className="version"><span>Versão da base</span><code>{meta?.version || '…'}</code></div><p className="small">As coordenadas usam WGS84 e mantêm a precisão da fonte. A seleção usa um retângulo amplo em torno de São Paulo; ela não verifica o limite administrativo do estado.</p><p className="geography-credit">O enquadramento dos municípios usa a <a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3" target="_blank" rel="noreferrer">malha simplificada do IBGE</a>. Os registros seguem o município informado na fonte.</p></section></div>}
  <footer className="page-footer"><span>Fonte: Infosiga / Detran-SP</span><span>Projeto acadêmico independente</span></footer>
  </main></div>
- {(detail || detailLoading || group || dialogError) && <DetailDialog onClose={closeDetails} focusKey={detail?.id ?? (detailLoading ? 'loading' : group ? `group-${group.offset}` : 'error')}><div className="detail-heading"><button className="icon-button" onClick={closeDetails} aria-label="Fechar detalhes"><X size={20}/></button></div>{dialogError && <div role="alert" className="error">{dialogError}</div>}{dialogError && !group && !detail && !detailLoading && <h2 id="detail-title">Registro indisponível</h2>}{detailLoading ? <h2 id="detail-title">Buscando os atributos do registro…</h2> : detail ? <>{group && <button className="back-to-group" onClick={() => setDetail(null)}>← Voltar aos {fmt(group.total)} sinistros do grupo</button>}<EventDetail record={detail} meta={meta} onLocate={locateEvent}/></> : group && <><h2 id="detail-title">{fmt(group.total)} {group.total===1?'sinistro':'sinistros'} {group.context.area ? 'nesta área' : group.context.ids ? 'nos pontos selecionados' : 'neste grupo'}</h2><p>Selecione um registro para consultar o local, os envolvidos e a gravidade.</p><div className="group-meta"><span>{groupLoading ? 'Carregando registros…' : group.total ? `${fmt(group.offset + 1)}–${fmt(group.offset + group.items.length)} de ${fmt(group.total)}` : 'Nenhum sinistro nesta seleção'}</span><span>Data crescente</span></div><div className="event-list">{group.items.map((r: any) => <button key={r.id} className="event-card" onClick={() => showDetail(r.id)} aria-label={`Ver detalhes do sinistro ${r.id}`}><div><span>#{r.id}</span><time>{String(r.date).slice(6, 8)}/{String(r.date).slice(4, 6)}/{String(r.date).slice(0, 4)}</time></div><h3>{meta?.types[r.type]}<ArrowUpRight size={16}/></h3><p>{labelCase(meta?.cities.find((c: any) => c.code === r.municipio)?.name || 'Município não informado')}</p><div className="event-card-bottom"><span className={r.fatal ? 'fatal-tag' : 'normal-tag'}>{r.fatal ? `${r.fatal} vítima${r.fatal > 1 ? 's' : ''} ${r.fatal > 1 ? 'fatais' : 'fatal'}` : meta?.registrations[r.registration]}</span><span>{r.grave + r.leve} feridos</span></div></button>)}</div><div className="group-pagination"><button disabled={groupLoading || group.offset === 0} onClick={() => showGroup(group.context, group.filters, Math.max(0, group.offset - group.limit))}>← Anteriores</button><button disabled={groupLoading || !group.has_more} onClick={() => showGroup(group.context, group.filters, group.offset + group.limit)}>Próximos →</button></div><p className="coordinate-note"><Info size={14}/>Sinistros com coordenadas iguais aparecem separados nesta lista.</p></>}</DetailDialog>}
+ {(detail || detailLoading || group || dialogError) && <DetailDialog onClose={closeDetails} wide={!!group && !detail && !detailLoading}
+    title={detail || detailLoading ? 'Detalhes do sinistro' : group ? `${fmt(group.total)} ${group.total===1?'sinistro':'sinistros'} ${group.context.area?'nesta área':'na seleção'}` : 'Registro indisponível'}
+    focusKey={detail?.id ?? (detailLoading ? 'loading' : group ? `group-${group.offset}-${groupLoading}` : 'error')}>
+    {dialogError && <Notification key={dialogError} status="error" title="Não foi possível carregar os registros" description={dialogError} dismissible={false}/>}
+    {detailLoading ? <h2 id="detail-title">Buscando os atributos do registro…</h2> : detail ? <>
+        {group && <Button variant="ghost" className="atlas-back-to-group" onClick={() => setDetail(null)}>← Voltar aos {fmt(group.total)} sinistros da lista</Button>}
+        <EventDetail record={detail} meta={meta} onLocate={locateEvent}/>
+    </> : null}
+    {group && <div hidden={!!detail || detailLoading}><EventGroupTable group={group} meta={meta} loading={groupLoading} error={dialogError} onOpen={showDetail}
+        onPage={offset=>showGroup(group.context,group.filters,offset)} onRetry={()=>showGroup(group.context,group.filters,group.offset)}/></div>}
+ </DetailDialog>}
 
- {notice && <div className="toast" role="status"><Check size={16}/>{notice}</div>}
+ <Toaster aria-label="Avisos do Atlas" closeLabel="Fechar aviso" position="bottom-end" limit={2}/>
  </div></AtlasUI>;
 }

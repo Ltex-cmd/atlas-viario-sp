@@ -44,7 +44,7 @@ import { cx, sortCx } from "@/utils/boardui/cx";
  */
 
 export type DrawerPlacement = "start" | "end" | "top" | "bottom";
-export type DrawerSize = "sm" | "md" | "lg";
+export type DrawerSize = "sm" | "md" | "lg" | "xl";
 
 const styles = sortCx({
   overlay: "group/drawer fixed inset-x-0 top-0 z-100 flex h-(--visual-viewport-height) p-2 sm:p-3",
@@ -94,6 +94,7 @@ const styles = sortCx({
     sm: "max-w-[320px]",
     md: "max-w-[400px]",
     lg: "max-w-[600px]",
+    xl: "max-w-[960px]",
   },
 });
 

@@ -2,7 +2,7 @@
 
 A interface usa código dos componentes gratuitos do BoardUI, instalado com a CLI `boardui@0.5.9` em 2 de novembro de 2026. Os arquivos pertencem ao projeto e não exigem conta, chave ou acesso ao BoardUI durante a execução do site.
 
-O inventário em [boardui-free.json](boardui-free.json) registra os 26 itens resolvidos, incluindo suas dependências internas. Todos foram conferidos no registro público gratuito, `https://www.boardui.com/r/registry.json`. A licença MIT original está em [vendor/boardui.LICENSE](../vendor/boardui.LICENSE). Nenhum componente ou template Pro foi instalado.
+O inventário em [boardui-free.json](boardui-free.json) registra os 37 itens resolvidos, incluindo suas dependências internas. Todos foram conferidos no registro público gratuito, `https://www.boardui.com/r/registry.json`. A licença MIT original está em [vendor/boardui.LICENSE](../vendor/boardui.LICENSE). Nenhum componente ou template Pro foi instalado.
 
 ## Componentes usados
 
@@ -17,8 +17,12 @@ O inventário em [boardui-free.json](boardui-free.json) registra os 26 itens res
 | Input | Busca de sinistro por ID |
 | Stat Cards e Skeleton | Indicadores reais da consulta e carregamento |
 | Table | Tabelas acessíveis de comparação, mantendo os cartões existentes em telas pequenas |
+| Tag Group | Filtros ativos removíveis por clique, Backspace ou Delete |
+| Data Table, Checkbox e Pagination | Lista de sinistros com ordenação, seleção, exportação e paginação |
+| Orders Chart Card | Evolução mensal e comparação com intervalo equivalente do ano anterior |
+| Toast e Notification | Confirmações, mensagens de erro e ações de recuperação |
 
-O mapa MapLibre, suas camadas, os gráficos estatísticos próprios, a API e o motor de consultas continuam com suas implementações existentes. Os gráficos e templates Pro do BoardUI não são necessários.
+O mapa MapLibre, suas camadas, a API e o motor de consultas continuam com suas implementações existentes. O gráfico mensal usa o Orders Chart Card gratuito, adaptado aos dados do Infosiga. Os gráficos e templates Pro do BoardUI não são necessários.
 
 ## Integração e ajustes
 
@@ -76,3 +80,24 @@ Testes de UI feitos por um agente Terra 6.1 com raciocínio high em 1280 × 720 
 Não houve teste em dispositivo físico. O navegador do subagente não disponibiliza janela visível; a inspeção usou a automação e as capturas do navegador.
 
 A versão integrada também foi conferida no navegador da thread principal: a tabela da amostra contém 13 métodos; trocar de Amostra inteira para Área de São Carlos altera a contagem de 1.000 para cinco sinistros. Em tela estreita, o documento não tem overflow horizontal e somente a tabela oferece rolagem lateral. A tabela BoardUI de estruturas renderiza suas seis linhas. A suíte automatizada terminou com 37 testes aprovados, além da verificação de renderização dos indicadores, checagem de tipos e build do frontend.
+
+## Segunda etapa: exploração dos resultados
+
+- As tags removem um filtro de cada vez ou todos, sincronizando a consulta e o formulário. Remover todos inclui o ano, consultando a cobertura integral; a ação Limpar seleção do formulário continua retornando ao ano mais recente.
+- A tabela de sinistros usa os dados reais da página de até 30 registros. Ordenação e seleção são locais a essa página, com aviso visível; a paginação permanece cronológica no servidor. Abrir um detalhe e voltar preserva seleção e ordenação. Trocar de página reinicia a seleção.
+- Exportar seleção baixa `atlas-viario-selecao.json` com os registros escolhidos, filtros, legenda e escopo explícito. Exportar no cabeçalho mantém o resumo completo da consulta.
+- O drawer de registros e detalhes usa gerenciamento de foco do React Aria. No celular a tabela rola horizontalmente dentro do painel.
+- O gráfico mensal é carregado em um módulo separado. A comparação faz uma consulta adicional somente quando solicitada, com os mesmos filtros de município e categorias e as mesmas datas no ano anterior. Requisições antigas são canceladas. A tabela de valores mensais oferece uma alternativa ao gráfico para teclado e leitura de tela.
+- Meses fora do período aparecem sem cobertura, nunca como zero. A comparação não é oferecida para intervalos que abrangem mais de um ano, para anos sem antecedente disponível, nem entre 2019 e 2018, cuja cobertura difere. O dia 29 de fevereiro corresponde a 28 de fevereiro no ano anterior, e as datas efetivas são exibidas.
+- O exemplo de clientes e os dados fictícios dos blocos BoardUI foram substituídos por propriedades obrigatórias e dados do Atlas. Os avatares de demonstração não são distribuídos.
+
+### Verificação da segunda etapa
+
+- Terra 6.1 high testou em Safari desktop: tags individuais e remoção completa, sincronização com formulário, ordenação por município/data/vítimas fatais, seleção, exportação, paginação, abrir detalhe, voltar e localizar no mapa.
+- A comparação inicial exibiu 126.272 eventos em janeiro a setembro de 2026 e 140.916 no mesmo intervalo de 2025, com variação de -10,4%. Outubro a dezembro permaneceram sem cobertura nas duas séries.
+- O teste encontrou uma perda de estado ao voltar dos detalhes. Após a correção, seleção e ordenação permaneceram na mesma página.
+- 41 testes de lógica passaram, incluindo limites de cobertura, período parcial e data bissexta. A verificação de renderização mantém distintos dados pendentes, falhas e resultados realmente vazios.
+- A thread principal complementou o teste em 375 × 812 e 1280 × 800: gráfico e detalhes legíveis, paginação móvel 1–30 → 31–60 e tabela com rolagem horizontal contida. O documento permaneceu sem overflow horizontal. Escape devolveu o foco a Ver lista da área.
+- O arquivo baixado pelo Safari foi inspecionado: `atlas-selected-events-v1`, um registro, ID 2728084, correspondente à seleção testada.
+- Capturas locais estão em `outputs/boardui-qa-v2/`. O gráfico é carregado separadamente; o build ainda avisa sobre o tamanho dos módulos principais e do MapLibre.
+- O percurso de exemplo em São Carlos foi concluído na thread principal: 1,8 km, 24 minutos e três sinistros para janeiro a setembro de 2026, em faixa de 50 m. O console do navegador não registrou erros durante a conferência final.
