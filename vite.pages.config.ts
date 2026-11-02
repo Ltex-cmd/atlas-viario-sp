@@ -9,6 +9,7 @@ export default defineConfig({
     base: '/atlas-viario-sp/',
     publicDir: fileURLToPath(new URL('./pages-public', import.meta.url)),
     plugins: [react()],
+    resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
     build: { outDir: '../dist-pages', emptyOutDir: true },
-    server: { host: '127.0.0.1', port: 5174, proxy: { '/api/v1': 'http://127.0.0.1:5173' } },
+    server: { host: '127.0.0.1', port: 5174, proxy: { '/api/v1': process.env.ATLAS_DEV_API_URL || 'http://127.0.0.1:5173' } },
 });

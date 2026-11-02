@@ -1,16 +1,14 @@
 // Check the rendered state, including the difference between missing data and zero.
 import { build } from 'esbuild';
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement } from 'react';
 
-const require = createRequire(import.meta.url);
-const output = new URL('../.sites-runtime/qa/StatisticsPanel.cjs', import.meta.url);
+const output = new URL('../.sites-runtime/qa/StatisticsPanel.mjs', import.meta.url);
 mkdirSync(new URL('.', output), { recursive: true });
-await build({ entryPoints: [new URL('../components/StatisticsPanel.tsx', import.meta.url).pathname], outfile: output.pathname, bundle: true, platform: 'node', format: 'cjs', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
-const Panel = require(output.pathname).default;
+await build({ entryPoints: [new URL('../components/StatisticsPanel.tsx', import.meta.url).pathname], outfile: output.pathname, bundle: true, platform: 'node', format: 'esm', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
+const { default: Panel } = await import(output.href);
 const zero = { total: 0, fatal_events: 0, fatal: 0, located: 0, months: Array(12).fill(0), types: [0, 0] };
 const props = { error: '', onRetry() {}, meta: { types: ['Colisão', 'Choque'] }, year: '2026', dateEnd: '2026-09-30', partial: true };
 const html = (extra) => renderToStaticMarkup(createElement(Panel, { ...props, ...extra }));
