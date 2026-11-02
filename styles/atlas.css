@@ -1,0 +1,5 @@
+/* Keep the existing Atlas layout below BoardUI utilities, without a global reset. */
+@layer theme, base, atlas, components, utilities;
+@import '../app/globals.css' layer(atlas);
+@import './boardui/globals.css';
+@import './atlas-boardui.css';

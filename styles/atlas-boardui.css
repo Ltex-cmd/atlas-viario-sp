@@ -1,0 +1,74 @@
+/* BoardUI's unfilled controls expect a transparent button base. */
+@layer base {
+  button { background: transparent; }
+}
+
+/* Brand overrides shared by the application and portalled BoardUI controls. */
+:root {
+  --color-accent-50: var(--paper);
+  --color-accent-100: var(--soft);
+  --color-accent-200: color-mix(in srgb, var(--green) 20%, var(--surface));
+  --color-accent-300: color-mix(in srgb, var(--green) 40%, var(--surface));
+  --color-accent-400: color-mix(in srgb, var(--green) 60%, var(--surface));
+  --color-accent-500: color-mix(in srgb, var(--green) 80%, var(--surface));
+  --color-accent-600: var(--green);
+  --color-accent-700: color-mix(in srgb, var(--green) 85%, var(--ink));
+  --color-accent-800: color-mix(in srgb, var(--green) 70%, var(--ink));
+  --color-accent-900: color-mix(in srgb, var(--green) 55%, var(--ink));
+  --color-accent-950: color-mix(in srgb, var(--green) 40%, var(--ink));
+  --color-text-primary: var(--ink);
+  --color-text-secondary: var(--muted);
+  --color-background-full: var(--paper);
+  --color-background-primary-default: var(--surface);
+  --color-background-secondary-default: var(--paper);
+  --color-background-tertiary-default: var(--paper);
+  --color-separator-border: var(--line);
+  --color-border-button-default: var(--line);
+  --color-stat-card-icon-background: var(--soft);
+  --color-segmented-control-background: var(--surface);
+  --color-segmented-control-selected-background: var(--soft);
+  --button-transition-ms: 300ms;
+  --input-transition-ms: 300ms;
+}
+
+.atlas-filter-drawer { background: var(--surface); }
+.atlas-filter-fields { display: flex; flex-direction: column; gap: 24px; padding: 0 0 16px; }
+.atlas-filter-dates { display: grid; gap: 16px; }
+.atlas-field-label { display: block; margin-bottom: 4px; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ink); }
+.atlas-date-control { display: flex; align-items: center; gap: 8px; }
+.atlas-date-control>button:first-child { flex: 1; justify-content: flex-start; }
+.atlas-date-hint { margin: -12px 0 0; font-size: 12px; line-height: 16px; color: var(--muted); }
+.atlas-filter-footer { flex-direction: column; align-items: stretch; gap: 8px; }
+.atlas-filter-footer>button { width: 100%; min-height: 40px; }
+.atlas-app .page-actions>button { min-height: 40px; }
+.atlas-app .topbar nav { background: none; border: 0; padding: 0; }
+.atlas-app .topbar nav button { padding: 8px 12px; }
+.atlas-app .topbar nav button[data-selected] { color: var(--green); }
+.atlas-map-switch { flex-wrap: wrap; }
+.atlas-map-switch button[data-selected] { color: var(--green); }
+.atlas-stat-cards { margin-bottom: 32px; }
+.atlas-stat-cards>section { min-height: 160px; height: auto; gap: 16px; background: var(--surface); }
+.atlas-stat-cards .atlas-stat-note { font-size: 12px; line-height: 16px; color: var(--muted); }
+.atlas-stat-cards .atlas-stat-unit { margin-inline-start: 8px; font-size: 12px; line-height: 16px; color: var(--muted); font-weight: 400; }
+.atlas-stat-skeletons { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin-bottom: 32px; }
+.atlas-stat-skeleton { height: 160px; }
+.atlas-table-caption { padding: 12px 16px; font-size: 12px; line-height: 16px; color: var(--muted); }
+.atlas-comparison-table { border: 1px solid var(--line); border-radius: 8px; margin-top: 24px; background: var(--surface); }
+.atlas-comparison-table .bui-table { width: 100%; white-space: normal; }
+.atlas-comparison-table .bui-table th,.atlas-comparison-table .bui-table td { padding: 12px 16px; height: auto; }
+.atlas-comparison-table .bui-table thead th { background: var(--paper); }
+.atlas-comparison-table .bui-table tbody th { background: var(--surface); }
+.atlas-comparison-table .bui-table tbody td { border: 0; }
+.atlas-comparison-table .bui-table [data-focus-visible] { outline: 2px solid var(--green); outline-offset: -2px; }
+.atlas-date-error { margin: 8px 16px 0; font-size: 12px; line-height: 16px; color: var(--danger); }
+.atlas-date-popover { max-width: calc(100vw - 16px); max-height: min(100dvh - 16px,var(--available-height)); overflow: auto; }
+.atlas-date-popover table { width: auto; }
+.atlas-date-popover th,.atlas-date-popover td { padding: 0; background: transparent; border: 0; }
+
+@media(max-width:640px) {
+  .atlas-stat-skeletons { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .atlas-app .topbar nav { width: 100%; }
+  .atlas-app .topbar nav>div { flex-wrap: wrap; width: 100%; }
+  .atlas-app .topbar nav button { flex: 1; padding: 8px; }
+  .atlas-app .page-actions>button { padding-inline: 8px; }
+}

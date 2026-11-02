@@ -1,0 +1,170 @@
+{
+  "installed_on": "2026-11-02",
+  "cli": "boardui@0.5.9",
+  "registry": "https://www.boardui.com/r/registry.json",
+  "license": "MIT",
+  "license_file": "vendor/boardui.LICENSE",
+  "items": [
+    {
+      "name": "cx",
+      "source_files": [
+        "utils/cx.ts"
+      ]
+    },
+    {
+      "name": "directional-icon",
+      "source_files": [
+        "utils/directional-icon.ts"
+      ]
+    },
+    {
+      "name": "theme",
+      "source_files": [
+        "styles/theme.css"
+      ]
+    },
+    {
+      "name": "typography",
+      "source_files": [
+        "styles/typography.css"
+      ]
+    },
+    {
+      "name": "globals",
+      "source_files": [
+        "styles/globals.css"
+      ]
+    },
+    {
+      "name": "button",
+      "source_files": [
+        "components/base/buttons/button.tsx"
+      ]
+    },
+    {
+      "name": "icon-button",
+      "source_files": [
+        "components/base/buttons/icon-button.tsx"
+      ]
+    },
+    {
+      "name": "input",
+      "source_files": [
+        "components/base/input/hint-text.tsx",
+        "components/base/input/input.tsx",
+        "components/base/input/label.tsx"
+      ]
+    },
+    {
+      "name": "chevrons",
+      "source_files": [
+        "components/foundations/icons/chevrons.tsx"
+      ]
+    },
+    {
+      "name": "use-dismiss-on-outside-press",
+      "source_files": [
+        "utils/use-dismiss-on-outside-press.ts"
+      ]
+    },
+    {
+      "name": "select",
+      "source_files": [
+        "components/base/dropdown/menu-styles.ts",
+        "components/base/select/select.tsx"
+      ]
+    },
+    {
+      "name": "direction",
+      "source_files": [
+        "components/foundations/direction/direction.tsx"
+      ]
+    },
+    {
+      "name": "scroll-fade",
+      "source_files": [
+        "components/foundations/scroll-fade/scroll-fade.tsx"
+      ]
+    },
+    {
+      "name": "combobox",
+      "source_files": [
+        "components/base/combobox/combobox.tsx",
+        "components/base/dropdown/menu-styles.ts"
+      ]
+    },
+    {
+      "name": "template-copy",
+      "source_files": [
+        "components/foundations/template-copy/template-copy.tsx"
+      ]
+    },
+    {
+      "name": "date-picker",
+      "source_files": [
+        "components/base/date-picker/date-picker.tsx",
+        "components/base/date-picker/shared.tsx"
+      ]
+    },
+    {
+      "name": "close-button",
+      "source_files": [
+        "components/base/buttons/close-button.tsx"
+      ]
+    },
+    {
+      "name": "spinner",
+      "source_files": [
+        "components/base/spinner/spinner.tsx"
+      ]
+    },
+    {
+      "name": "modal",
+      "source_files": [
+        "components/base/modal/modal.tsx"
+      ]
+    },
+    {
+      "name": "drawer",
+      "source_files": [
+        "components/base/drawer/drawer.tsx"
+      ]
+    },
+    {
+      "name": "table",
+      "source_files": [
+        "components/base/table/table.tsx"
+      ]
+    },
+    {
+      "name": "chip",
+      "source_files": [
+        "components/base/badges/chip.tsx"
+      ]
+    },
+    {
+      "name": "tooltip",
+      "source_files": [
+        "components/base/tooltip/tooltip.tsx"
+      ]
+    },
+    {
+      "name": "stat-cards",
+      "source_files": [
+        "components/application/dashboard/stat-cards.tsx"
+      ]
+    },
+    {
+      "name": "skeleton",
+      "source_files": [
+        "components/base/skeleton/skeleton.tsx"
+      ]
+    },
+    {
+      "name": "segmented-control",
+      "source_files": [
+        "components/base/segmented-control/segmented-control.tsx"
+      ]
+    }
+  ]
+}

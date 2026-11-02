@@ -1,3 +1,6 @@
+import { StatCards } from './boardui/application/dashboard/stat-cards';
+import { Skeleton } from './boardui/base/skeleton/skeleton';
+import { CarFront, AlertCircle, Users, MapPin } from './icons';
 const fmt = (n: number) => n.toLocaleString('pt-BR');
 const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -10,14 +13,14 @@ export default function StatisticsPanel({ stats, ready, error, onRetry, meta, ye
         <p className="summary-scope">Os totais incluem sinistros sem localização, em toda a região selecionada nos filtros.</p>
         {!ready ? <>
             <div className="statistics-state" role="status">{error ? <><p>Não foi possível carregar as estatísticas.</p><button onClick={onRetry}>Tentar novamente</button></> : <p>Carregando estatísticas…</p>}</div>
-            {!error && <div className="statistics-placeholder" aria-hidden="true"><div/><div/><div/><div/></div>}
+            {!error && <div className="atlas-stat-skeletons" aria-hidden="true">{[0,1,2,3].map(key=><Skeleton key={key} className="atlas-stat-skeleton"/>)}</div>}
         </> : <>
-            <div className="stats-grid" aria-label="Indicadores da consulta">
-                <article><div className="stat-label">Sinistros</div><div className="stat-value">{fmt(stats.total)}<span className="unit">eventos</span></div></article>
-                <article><div className="stat-label">Sinistros fatais</div><div className="stat-value">{fmt(stats.fatal_events)}<span className="unit">eventos</span></div><div className="stat-note">{percentage(stats.fatal_events)}% dos sinistros da consulta</div></article>
-                <article><div className="stat-label">Vítimas fatais</div><div className="stat-value">{fmt(stats.fatal)}<span className="unit">pessoas</span></div><div className="stat-note">Pessoas que morreram nos sinistros</div></article>
-                <article><div className="stat-label">Com localização</div><div className="stat-value">{fmt(stats.located)}<span className="unit">eventos</span></div><div className="stat-note">{percentage(stats.located)}% dos registros com coordenadas</div></article>
-            </div>
+            <StatCards className="atlas-stat-cards" stats={[
+                { icon: CarFront, label: 'Sinistros', value: fmt(stats.total), unit: 'eventos', description: 'Total dos filtros selecionados' },
+                { icon: AlertCircle, label: 'Sinistros fatais', value: fmt(stats.fatal_events), unit: 'eventos', description: `${percentage(stats.fatal_events)}% dos sinistros da consulta` },
+                { icon: Users, label: 'Vítimas fatais', value: fmt(stats.fatal), unit: 'pessoas', description: 'Pessoas que morreram nos sinistros' },
+                { icon: MapPin, label: 'Com localização', value: fmt(stats.located), unit: 'eventos', description: `${percentage(stats.located)}% dos registros com coordenadas` },
+            ]}/>
             {stats.total === 0 ? <p className="empty-statistics">Nenhum sinistro corresponde aos filtros selecionados.</p> : <div className="bottom-grid">
                 <section className="chart-panel"><div className="section-title"><h3>Sinistros por mês</h3><span className="muted">{year || 'Todos os anos'}</span></div>
                     <div className="month-chart">{months.map((name, i) => {
