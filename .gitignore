@@ -49,4 +49,5 @@ yarn-error.log*
 /dist-pages/
 /.pages-cache/
 /web/node_modules/
+/.benchmark-build/
 

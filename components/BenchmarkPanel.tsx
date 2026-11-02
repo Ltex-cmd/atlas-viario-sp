@@ -7,7 +7,6 @@ const fmt = (n: number) => n.toLocaleString('pt-BR');
 const decimal = (n: number, digits: number) => n.toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const ms = (n: number) => `${decimal(n, 3)} ms`;
 const mib = (n: number) => `${decimal(n / 1048576, 2)} MiB`;
-const median = (values: number[]) => values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
 const scenarios = [
     ['spatial', 'São Paulo e motocicletas', 'São Paulo, 2026, motocicleta, região metropolitana.'],
     ['broad', 'Estado inteiro', 'Todos os eventos localizados de 2026, na caixa ampla do estado.'],
@@ -17,7 +16,7 @@ const scenarios = [
 export default function BenchmarkPanel({ data, meta }: { data: any; meta: any }) {
     const [scenario, setScenario] = useState('spatial');
     if (!data) return <section className="native-panel"><h2>Tempos em cenários fixos</h2><p role="status">Carregando medições…</p></section>;
-    const result = data[scenario], original = data.original_cli, storage = data.storage;
+    const result = data[scenario], storage = data.storage;
     return <section className="native-panel" aria-labelledby="saved-times-title">
         <div className="section-title"><h2 id="saved-times-title">Tempos em cenários fixos</h2></div>
         <p className="muted">Estas medições foram salvas no computador de teste. Os filtros e a área do mapa não alteram os cenários abaixo.</p>
@@ -48,13 +47,6 @@ export default function BenchmarkPanel({ data, meta }: { data: any; meta: any })
                 { id: 'read', label: 'Leitura com cache aquecido', values: { a: `mmap: ${ms(storage.warm_mmap_touch_ms)}`, b: `fread: ${ms(storage.warm_fread_touch_ms)}` } }
             ]}/>
             <div className="measurement-notes"><p>{storage.methodology}</p><p>A cópia SoA usa mais {mib(storage.soa_extra_bytes)}. Essa medição não cobre todas as agregações da aplicação nem leitura com disco frio.</p></div>
-        </details>}
-        {original && <details className="benchmark-details benchmark-section"><summary>Comparação com o projeto original</summary>
-            <p>Consulta: {original.query}. O programa original foi recompilado e executado em uma saída isolada, usando sua lista sequencial. Os dois sistemas encontraram <b>{fmt(original.comparison.total)} eventos</b>.</p>
-            <DataTable firstColumn="Etapa" caption="Programa original: mediana de três execuções" columns={[{ key: 'time', label: 'Tempo' }]} rows={[
-                ['LOAD_MS', 'Carregamento'], ['SEARCH_MS', 'Busca'], ['RESULT_INSERT_MS', 'Construção da lista de resultados'], ['WRITE_MS', 'Gravação CSV']
-            ].map(([key, label]) => ({ id: key, label, values: { time: ms(median(original.samples.map((sample: any) => Number(sample[key])))) } }))}/>
-            <div className="measurement-notes"><p>O motor compacto levou {ms(original.comparison.query_ms)} para contar e agregar essa consulta, com os índices carregados.</p><p>{original.note} As operações medidas são diferentes, por isso os tempos não indicam uma razão direta de aceleração.</p></div>
         </details>}
     </section>;
 }

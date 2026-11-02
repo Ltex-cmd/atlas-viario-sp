@@ -24,6 +24,11 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: Check the comparison with 1000 records
+        run: |
+          cmake -S benchmarks -B .benchmark-build/ci -DCMAKE_BUILD_TYPE=Release -DATLAS_SANITIZE=ON
+          cmake --build .benchmark-build/ci --parallel 2
+          ctest --test-dir .benchmark-build/ci --output-on-failure
       - run: npm run typecheck
       - run: npm test
       - run: npm run build:pages
