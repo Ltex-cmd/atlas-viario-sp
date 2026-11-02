@@ -143,3 +143,7 @@
 }
 
 .journey-error-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.journey-proposal { border: 1px solid var(--green); background: var(--soft); border-radius: 8px; padding: 20px; margin-top: 16px; font-size: 13px; line-height: 1.6; }
+.journey-proposal h3 { font-size: 16px; font-weight: 600; color: var(--green); margin-bottom: 8px; }
+.journey-proposal p + p,.journey-proposal ul { margin-top: 8px; }
+.journey-proposal ul { list-style: disc; padding-left: 20px; margin-bottom: 8px; }

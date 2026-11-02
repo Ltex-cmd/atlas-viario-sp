@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 import { ArrowRight, LocateFixed, MapPin, Search, X } from './icons';
 import { filterKey, type Filters } from './query-state';
-import { distanceLabel, durationLabel, routeBounds, routeLatitude, validCoordinate, type Coordinate, type Journey, type Place, type TravelMode } from '../lib/journey';
+import { distanceLabel, durationLabel, journeyNeedsConfirmation, parseCoordinateInput, routeBounds, routeLatitude, validCoordinate, type Coordinate, type Journey, type Place, type TravelMode } from '../lib/journey';
 
 type Slot = 'from' | 'to';
 type EventRow = { id: number; date: number; type: number; latitude: number; longitude: number };
@@ -31,6 +31,8 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
     const [texts, setTexts] = useState({ from: '', to: '' });
     const [mode, setMode] = useState<TravelMode>('foot'), [radius, setRadius] = useState(50);
     const [picking, setPicking] = useState<Slot | null>(null), [route, setRoute] = useState<Journey | null>(null);
+    const [proposal, setProposal] = useState<Journey | null>(null);
+    const displayRoute = route ?? proposal;
     const [routeBusy, setRouteBusy] = useState(false), [routeError, setRouteError] = useState('');
     const [selection, setSelection] = useState<Selection | null>(null), [selectionKey, setSelectionKey] = useState('');
     const [countBusy, setCountBusy] = useState(false), [countError, setCountError] = useState(''), [retry, setRetry] = useState(0);
@@ -46,7 +48,7 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
     const pick = useCallback((slot: Slot | null) => { pickingRef.current = slot; setPicking(slot); onPickingChange(slot !== null); }, [onPickingChange]);
     const invalidate = useCallback(() => {
         routeAbort.current?.abort(); countAbort.current?.abort();
-        setRoute(null); setSelection(null); setRouteBusy(false); setCountBusy(false); setRouteError(''); setCountError(''); setListOpen(false);
+        setRoute(null); setProposal(null); setSelection(null); setRouteBusy(false); setCountBusy(false); setRouteError(''); setCountError(''); setListOpen(false);
     }, []);
     const choose = useCallback((slot: Slot, place: Place) => {
         searchAbort.current?.abort(); invalidate();
@@ -101,15 +103,15 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
     useEffect(() => {
         if (!map?.getStyle()) return;
         updateSource(map, 'journey-endpoints', { type: 'FeatureCollection', features: [from, to].flatMap((p, i) => p ? [{ type: 'Feature', properties: { label: i ? 'B' : 'A' }, geometry: { type: 'Point', coordinates: p.coordinates } }] : []) });
-        const features: any[] = route ? [{ type: 'Feature', properties: { kind: 'route' }, geometry: { type: 'LineString', coordinates: route.coordinates } }] : [];
-        if (route) {
-            [from, to].forEach((place, i) => { if (place && route.waypoints[i].distance_m > 5) features.push({ type: 'Feature', properties: { kind: 'connector' }, geometry: { type: 'LineString', coordinates: [place.coordinates, route.waypoints[i].coordinates] } }); });
-            const metresPerPixel = 2 * Math.PI * 6371008.8 * Math.cos(routeLatitude(route.coordinates) * Math.PI / 180) / 512;
+        const features: any[] = displayRoute ? [{ type: 'Feature', properties: { kind: 'route' }, geometry: { type: 'LineString', coordinates: displayRoute.coordinates } }] : [];
+        if (displayRoute) {
+            [from, to].forEach((place, i) => { if (place && displayRoute.waypoints[i].distance_m > 5) features.push({ type: 'Feature', properties: { kind: 'connector' }, geometry: { type: 'LineString', coordinates: [place.coordinates, displayRoute.waypoints[i].coordinates] } }); });
+            const metresPerPixel = 2 * Math.PI * 6371008.8 * Math.cos(routeLatitude(displayRoute.coordinates) * Math.PI / 180) / 512;
             const width = 2 * radius / metresPerPixel;
             map.setPaintProperty('journey-band', 'line-width', ['interpolate', ['exponential', 2], ['zoom'], 0, width, 22, width * 2 ** 22]);
         }
         updateSource(map, 'journey-line', { type: 'FeatureCollection', features });
-    }, [map, route, from, to, radius]);
+    }, [map, displayRoute, from, to, radius]);
     useEffect(() => {
         if (!map?.getStyle()) return;
         updateSource(map, 'journey-events', ready ? { type: 'FeatureCollection', features: (selection?.points || []).map(p => ({ type: 'Feature', properties: { id: p.id }, geometry: { type: 'Point', coordinates: [p.longitude, p.latitude] } })) } : empty);
@@ -131,9 +133,9 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
         if (route) void count(route, 0, true);
         return () => countAbort.current?.abort();
     }, [route, count, retry]);
-    const fit = (journey: Journey) => {
+    const fit = (journey: Journey, origin = from, destination = to) => {
         if (!map) return;
-        const b = routeBounds(journey.coordinates, Math.max(radius, 100));
+        const b = routeBounds([...journey.coordinates, ...[origin, destination].flatMap(place => place ? [place.coordinates] : [])], Math.max(radius, 100));
         map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 48, maxZoom: 16, duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 500 });
     };
     const trace = async (origin = from, destination = to) => {
@@ -143,13 +145,18 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
         try {
             const params = new URLSearchParams({ from: origin.coordinates.join(','), to: destination.coordinates.join(','), mode });
             const data: Journey = await responseJSON('/api/v1/route?' + params, controller.signal);
-            if (!controller.signal.aborted) { setRoute(data); fit(data); }
+            if (!controller.signal.aborted) {
+                if (journeyNeedsConfirmation(data)) setProposal(data); else setRoute(data);
+                fit(data, origin, destination);
+            }
         } catch (e: any) { if (e.name !== 'AbortError') setRouteError(e.message || 'Não foi possível traçar o percurso. Tente novamente.'); }
         finally { if (!controller.signal.aborted) setRouteBusy(false); }
     };
     const search = async (slot: Slot) => {
         searchAbort.current?.abort(); const controller = new AbortController(); searchAbort.current = controller;
         pick(null); const text = texts[slot].trim();
+        const coordinates = parseCoordinateInput(text);
+        if (coordinates) { choose(slot, { label: `Ponto no mapa · ${coordinates[1].toFixed(5)}, ${coordinates[0].toFixed(5)}`, coordinates }); return; }
         if (text.length < 3) { setLookup({ slot, busy: false, places: [], error: 'Escreva uma rua, escola ou praça e inclua o município.' }); return; }
         setLookup({ slot, busy: true, places: [], error: '' });
         try {
@@ -168,7 +175,7 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
         <div className="journey-inputs">{(['from', 'to'] as Slot[]).map((slot, i) => <div className="journey-endpoint" key={slot}>
             <form onSubmit={e => { e.preventDefault(); void search(slot); }}>
                 <label htmlFor={'journey-' + slot}><span className="journey-letter">{i ? 'B' : 'A'}</span>{i ? 'Destino' : 'Origem'}</label>
-                <div className="journey-search"><input id={'journey-' + slot} value={texts[slot]} onChange={e => edit(slot, e.target.value)} placeholder="Rua, escola ou praça e município" autoComplete="off" maxLength={160}/><button type="submit" disabled={lookup?.busy} aria-label={'Buscar ' + (i ? 'destino' : 'origem')}><Search size={18}/></button><button type="button" disabled={!map} aria-label={'Escolher ' + (i ? 'destino' : 'origem') + ' no mapa'} aria-pressed={picking === slot} onClick={() => pick(picking === slot ? null : slot)}><MapPin size={18}/></button></div>
+                <div className="journey-search"><input id={'journey-' + slot} value={texts[slot]} onChange={e => edit(slot, e.target.value)} placeholder="Rua, lugar ou latitude, longitude" autoComplete="off" maxLength={160}/><button type="submit" disabled={lookup?.busy} aria-label={'Buscar ' + (i ? 'destino' : 'origem')}><Search size={18}/></button><button type="button" disabled={!map} aria-label={'Escolher ' + (i ? 'destino' : 'origem') + ' no mapa'} aria-pressed={picking === slot} onClick={() => pick(picking === slot ? null : slot)}><MapPin size={18}/></button></div>
             </form>
             {lookup?.slot === slot && <div className="journey-search-results" aria-live="polite">{lookup.busy ? <p className="journey-loading-text">Buscando lugares…</p> : lookup.error ? <p role="status">{lookup.error}</p> : <ul aria-label={'Lugares para ' + (i ? 'destino' : 'origem')}>{lookup.places.map((place, index) => <li key={index}><button onClick={() => choose(slot, place)}>{place.label}<ArrowRight size={16}/></button></li>)}</ul>}</div>}
         </div>)}</div>
@@ -178,11 +185,23 @@ export default function JourneyPanel({ map, filters, period, meta, onDetail, onP
             <Button variant="secondary" size="small" disabled={!map} onClick={() => { setRouteError(''); pick('from'); }}>Ajustar origem no mapa</Button>
             <Button variant="secondary" size="small" disabled={!map} onClick={() => { setRouteError(''); pick('to'); }}>Ajustar destino no mapa</Button>
         </div></div>}
+        {proposal && <div className="journey-proposal" role="region" aria-label="Revisar rota encontrada" aria-live="polite">
+            <h3>Rota encontrada em vias próximas</h3>
+            <p>Para conectar os dois lados, ampliamos a busca por vias. Confira onde o trajeto começa e termina:</p>
+            <ul>{proposal.waypoints.map((waypoint, i) => <li key={i}><strong>{i ? 'Destino B' : 'Origem A'}:</strong> via a {distanceLabel(waypoint.distance_m)} do ponto escolhido.</li>)}</ul>
+            <p><strong>{distanceLabel(proposal.distance_m)} · {durationLabel(proposal.duration_s)}</strong> nas vias do traçado.</p>
+            <p>As linhas pontilhadas mostram a distância até os pontos, sem confirmar um caminho de acesso. Elas não entram na distância, no tempo ou na contagem de sinistros.</p>
+            <div className="journey-error-actions">
+                <Button size="small" onClick={() => { setRoute(proposal); setProposal(null); }}>Usar este traçado</Button>
+                <Button variant="secondary" size="small" disabled={!map} onClick={() => { invalidate(); pick('from'); }}>Ajustar origem no mapa</Button>
+                <Button variant="secondary" size="small" disabled={!map} onClick={() => { invalidate(); pick('to'); }}>Ajustar destino no mapa</Button>
+            </div>
+        </div>}
         {route && <div className="journey-result" aria-live="polite"><div><strong className={countBusy ? 'journey-counter pending-counter' : 'journey-counter'}>{ready ? `${number(selection.total)} ${selection.total === 1 ? 'sinistro' : 'sinistros'}` : countError ? 'Contagem indisponível' : 'Contando sinistros…'}</strong><p>Até {radius} m do percurso · {period}</p></div><div className="journey-metrics"><span>{distanceLabel(route.distance_m)}</span><span>{durationLabel(route.duration_s)} estimados</span></div><div className="journey-result-actions"><button className="journey-text-button" onClick={() => fit(route)}><LocateFixed size={16}/>Ver percurso</button>{ready && selection.total > 0 && <button className="journey-text-button" onClick={() => setListOpen(v => !v)} aria-expanded={listOpen}>{listOpen ? 'Ocultar registros' : 'Ver registros'}<ArrowRight size={16}/></button>}</div></div>}
         {countError && <div className="journey-error" role="alert"><p>{countError}</p><button className="journey-text-button" onClick={() => setRetry(n => n + 1)}>Tentar contagem novamente</button></div>}
         {ready && selection.total === 0 && <p className="journey-note">Nenhum sinistro com localização disponível foi encontrado nessa faixa e com os filtros aplicados. Isso não significa ausência de risco.</p>}
         {ready && selection.total > (selection.map_shown || 0) && <p className="journey-note">O mapa mostra os primeiros {number(selection.map_shown || 0)} de {number(selection.total)} registros. A contagem inclui todos e a lista permite consultar os demais.</p>}
-        {route && route.waypoints.some(w => w.distance_m > 5) && <p className="journey-note">A rota foi ajustada à rede de ruas. {route.waypoints.map((w, i) => w.distance_m > 5 ? `${i ? 'Destino B' : 'Origem A'} a ${distanceLabel(w.distance_m)} do ponto escolhido.` : '').filter(Boolean).join(' ')} Os trechos pontilhados mostram esse ajuste.</p>}
+        {route && route.waypoints.some(w => w.distance_m > 5) && <p className="journey-note">A rota foi ajustada à rede de ruas. {route.waypoints.map((w, i) => w.distance_m > 5 ? `${i ? 'Destino B' : 'Origem A'} a ${distanceLabel(w.distance_m)} do ponto escolhido.` : '').filter(Boolean).join(' ')} As linhas pontilhadas não confirmam um caminho de acesso e não entram na distância, no tempo ou na contagem de sinistros.</p>}
         {listOpen && selection && <div className="journey-records" aria-busy={countBusy}><div className="journey-records-heading"><h3>Registros próximos ao percurso</h3><span>{ready ? `${number(selection.offset + 1)} a ${number(selection.offset + selection.items.length)} de ${number(selection.total)}` : 'Carregando registros…'}</span></div>{ready && <ul>{selection.items.map(row => <li key={row.id}><button onClick={() => onDetail(row.id)}><span><time>{String(row.date).slice(6, 8)}/{String(row.date).slice(4, 6)}/{String(row.date).slice(0, 4)}</time><span>{meta?.types?.[row.type] || 'Sinistro'} · #{row.id}</span></span><ArrowRight size={18}/></button></li>)}</ul>}<div className="journey-pagination"><button disabled={!ready || selection.offset === 0} onClick={() => route && void count(route, Math.max(0, selection.offset - selection.limit), false)}>Anteriores</button><button disabled={!ready || !selection.has_more} onClick={() => route && void count(route, selection.offset + selection.limit, false)}>Próximos</button></div></div>}
         <p className="journey-note">Os filtros aplicados também valem para o percurso. A faixa sombreada indica a proximidade consultada; os pontos mantêm as coordenadas da fonte. A contagem não mede a segurança do caminho.</p>
         <div className="journey-attribution"><span>Rotas: <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noreferrer">OSRM / FOSSGIS</a> · Busca: <a href="https://photon.komoot.io" target="_blank" rel="noreferrer">Photon</a> · Dados: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap</a></span><a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Corrigir o mapa</a><details><summary>Sobre a busca e as rotas</summary><p>Os serviços externos recebem os lugares pesquisados e os pontos do percurso. O operador de rotas registra as consultas. Este teste usa serviços públicos com limites de uso e depende da disponibilidade deles.</p></details></div>

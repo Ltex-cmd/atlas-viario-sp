@@ -7,12 +7,25 @@ export type Journey = {
     duration_s: number;
     mode: TravelMode;
     waypoints: { coordinates: Coordinate; distance_m: number; name: string }[];
+    snapping?: { search_radius_m: number; expanded_search: boolean; requires_confirmation: boolean };
 };
 export const METRES_PER_DEGREE = Math.PI * 6371008.8 / 180;
+export const JOURNEY_SNAP_RADIUS_M = 500;
+export const JOURNEY_EXPANDED_SNAP_RADIUS_M = 2000;
+export function journeyNeedsConfirmation(journey: Journey) {
+    return journey.waypoints.some(point => point.distance_m > JOURNEY_SNAP_RADIUS_M);
+}
 export const JOURNEY_MAX_METRES = 100_000;
 export const JOURNEY_MAX_VERTICES = 10_000;
 export function validCoordinate(value: unknown): value is Coordinate {
     return Array.isArray(value) && value.length === 2 && value.every(v => typeof v === 'number' && Number.isFinite(v)) && value[0] >= -54 && value[0] <= -43 && value[1] >= -26 && value[1] <= -19;
+}
+/** Coordinates typed by people follow latitude, longitude; routing uses longitude, latitude. */
+export function parseCoordinateInput(text: string): Coordinate | null {
+    const match = text.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+    if (!match) return null;
+    const coordinates = [Number(match[2]), Number(match[1])];
+    return validCoordinate(coordinates) ? coordinates : null;
 }
 export function routeLength(coordinates: Coordinate[]) {
     let metres = 0;

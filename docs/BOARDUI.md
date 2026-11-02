@@ -109,3 +109,24 @@ O OSRM pode responder HTTP 400 com `NoRoute` ou `NoSegment`. O adaptador tratava
 Referência do contrato: https://project-osrm.org/docs/v5.24.0/api/#general-options
 
 Verificação: a seleção que originou o relato exibiu a mensagem de caminho a pé não encontrado; Ajustar destino ativou a escolha no mapa e Escape a cancelou sem mudar os pontos. O exemplo em São Carlos continuou retornando HTTP 200, 1.812 m, 24 minutos e três sinistros. Foram aprovados 46 testes, checagem de tipos e builds do servidor e do frontend.
+
+
+### Correção do cálculo para pontos fora da rede conectada
+
+O diagnóstico com as coordenadas exibidas no relato (`A: -21.71571, -48.09051`; `B: -21.79387, -47.90249`, latitude/longitude, a pé) reproduziu `NoRoute` com `radiuses=500;500`. A consulta de vias próximas encontrou A a 318,98 m e B a 407,90 m, mas o roteador só retornou um caminho conectado ao ampliar o raio: B foi associado a uma via a 1.054,16 m. Com `radiuses=2000;2000`, o mesmo serviço e modo retornaram 38.281,7 m, 32.662,6 s e 757 vértices. Isso indica que o limite fixo de 500 m bloqueava uma alternativa na rede disponível; não comprova acesso físico entre o clique e a via escolhida.
+
+O adaptador agora tenta 500 m primeiro e, somente após `NoRoute` ou `NoSegment`, faz uma tentativa limitada a 2.000 m. Erros de disponibilidade e limite de consultas não disparam essa segunda tentativa. As chamadas continuam no mesmo provedor, com os mesmos pontos, modo e espaçamento mínimo de 1,1 segundo.
+
+A UI desenha a alternativa e pede revisão se algum ponto ficar a mais de 500 m da via. Os marcadores A/B permanecem nas coordenadas escolhidas. As linhas pontilhadas indicam apenas o deslocamento; não viram geometria de rota nem entram nas medidas ou na contagem. A consulta de sinistros começa depois de **Usar este traçado**. Origem e destino também aceitam coordenadas no formato `latitude, longitude`, permitindo repetir a consulta sem depender da precisão de um clique.
+
+Verificação em 02/11/2026:
+
+- A prévia local encontrou a proposta de 38,3 km / 9 h 4 min, com origem a 319 m e destino a 1,1 km. Antes da aceitação não apareceu contagem de sinistros.
+- Após aceitar: 11 sinistros em faixa de 50 m e 13 em faixa de 100 m, com período de 01/01 a 30/09/2026. A lista exibiu os 11 registros da primeira consulta.
+- Alterar o modo removeu o traçado e a contagem anterior. Ajustar destino ativou a seleção no mapa; Escape cancelou sem mudar os pontos.
+- O exemplo São Carlos continuou funcionando sem confirmação extra: 1,8 km, 24 min, três sinistros na faixa de 50 m.
+- 54 testes, checagem de tipos, verificação de renderização e builds do servidor/frontend aprovados. Permanecem os avisos de tamanho dos módulos do frontend.
+- Terra 6.1 high revisou a lógica da proposta e da invalidação. A validação interativa acima foi feita pela thread principal no IAB, porque o IAB do subagente não estava disponível e o Safari estava em uso.
+- Evidências locais: `outputs/route-diagnosis/` e `outputs/boardui-qa-v2/route-proposal.jpg`.
+
+Referências: [opções de associação a vias do OSRM](https://project-osrm.org/docs/v5.24.0/api/#general-options) e [condições do servidor FOSSGIS](https://routing.openstreetmap.de/about.html).

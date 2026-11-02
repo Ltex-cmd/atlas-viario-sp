@@ -1,15 +1,15 @@
-import { validCoordinate, validateRoute, JOURNEY_MAX_METRES, type Coordinate, type TravelMode, type Journey, type Place } from '../lib/journey';
+import { validCoordinate, type Coordinate, type TravelMode, type Journey, type Place } from '../lib/journey';
 
 import { JourneyError, readProviderResponse } from './journey-response';
 export { JourneyError } from './journey-response';
-const profile: Record<TravelMode, string> = { foot: 'routed-foot', bike: 'routed-bike', car: 'routed-car' };
+import { requestConnectedJourney, routingProfile } from './journey-routing';
 const identity = 'AtlasViarioAcademic/1.0 (+https://ltex-cmd.github.io/atlas-viario-sp/)';
 const cache = new Map<string, { expires: number; data: unknown }>();
 let nextRequest = 0;
 let pending = 0;
 // The private demonstration sends requests only after explicit user actions.
 // Serialise all provider requests in this isolate, including address searches.
-async function upstream(url: URL, mode?: TravelMode) {
+async function upstream(url: URL, mode?: TravelMode, snapRadius = 500) {
     const cached = cache.get(url.href);
     if (cached && cached.expires > Date.now()) return cached.data as any;
     if (pending >= 6) throw new JourneyError('Há consultas em andamento. Aguarde alguns segundos e tente novamente.', 429);
@@ -22,7 +22,7 @@ async function upstream(url: URL, mode?: TravelMode) {
         let response: Response;
         try { response = await fetch(url, { headers: { 'User-Agent': identity, 'Accept': 'application/json', 'Referer': 'https://ltex-cmd.github.io/atlas-viario-sp/' }, signal: AbortSignal.timeout(20_000) }); }
         catch { throw new JourneyError(mode ? 'O serviço de rotas não respondeu. Tente traçar o percurso novamente.' : 'O serviço de busca não respondeu. Tente novamente ou escolha os pontos no mapa.', 503); }
-        const data = await readProviderResponse(response, mode);
+        const data = await readProviderResponse(response, mode, snapRadius);
         if (cache.size >= 64) cache.delete(cache.keys().next().value!);
         cache.set(url.href, { data, expires: Date.now() + 15 * 60_000 });
         return data;
@@ -56,18 +56,8 @@ export async function requestJourney(params: URLSearchParams): Promise<Journey> 
     };
     const from = point('from'), to = point('to');
     const mode = params.get('mode') || 'foot';
-    if (!Object.hasOwn(profile, mode)) throw new JourneyError('Modo de transporte inválido.');
-    const url = new URL(`https://routing.openstreetmap.de/${profile[mode as TravelMode]}/route/v1/driving/${from.join(',')};${to.join(',')}`);
-    url.search = new URLSearchParams({ geometries: 'geojson', overview: 'full', steps: 'false', alternatives: 'false', radiuses: '500;500' }).toString();
-    const data = await upstream(url, mode as TravelMode);
-    if (data.code !== 'Ok' || !data.routes?.length) throw new JourneyError('Não foi encontrado um caminho entre esses pontos. Escolha pontos mais próximos das ruas.', 422);
-    const r = data.routes[0];
-    if (!Number.isFinite(r.distance) || !Number.isFinite(r.duration) || r.distance < 0 || r.duration < 0) throw new JourneyError('O serviço de rotas retornou uma resposta incompleta.', 503);
-    if (r.distance > JOURNEY_MAX_METRES) throw new JourneyError('Este teste aceita percursos de até 100 km. Escolha pontos mais próximos.');
-    const coordinates = validateRoute(r.geometry?.coordinates);
-    const waypoints = (data.waypoints || []).map((w: any) => ({ coordinates: w.location, distance_m: w.distance, name: String(w.name || '') }));
-    if (waypoints.length !== 2 || waypoints.some((w: any) => !validCoordinate(w.coordinates) || !Number.isFinite(w.distance_m) || w.distance_m > 500)) throw new JourneyError('Não foi possível associar os pontos às ruas. Escolha novamente no mapa.', 422);
-    return { coordinates, distance_m: r.distance, duration_s: r.duration, mode: mode as TravelMode, waypoints };
+    if (!Object.hasOwn(routingProfile, mode)) throw new JourneyError('Modo de transporte inválido.');
+    return requestConnectedJourney(from, to, mode as TravelMode, upstream);
 }
 export async function readJourneyBody(request: Request): Promise<any> {
     if (!request.headers.get('Content-Type')?.includes('application/json')) throw new JourneyError('Envie o percurso em JSON.', 415);
