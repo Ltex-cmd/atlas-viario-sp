@@ -30,7 +30,7 @@ const structures = [
     } },
     { id: 'identifier', label: 'Busca por ID', values: {
         original: 'O programa aplica o filtro de ID durante o percurso da estrutura escolhida.',
-        site: 'O motor tem uma tabela hash e um vetor ordenado por ID. Na API publicada, o detalhe abre um arquivo dividido por faixa de IDs.',
+        site: 'O motor tem uma tabela hash e um vetor ordenado por ID. Na API publicada, os detalhes são organizados por faixa de IDs.',
     } },
 ];
 
@@ -53,7 +53,7 @@ export default function SampleBenchmarkPanel() {
                 {report.scenarios.map(value => <button key={value.id} aria-pressed={value.id === selected} onClick={() => setSelected(value.id)}>{value.name}</button>)}
             </div>
             <div className="sample-outcome" aria-live="polite" aria-atomic="true">
-                <p>{scenario.description}</p>
+                <p>{scenario.id === 'all' ? 'Todos os 1.000 registros, inclusive os que não podem ser localizados no mapa.' : scenario.description}</p>
                 <p className={verified ? 'sample-verification success' : 'sample-verification error-text'}>
                     {verified ? <Check size={18}/> : <AlertCircle size={18}/>}
                     {verified ? `${fmt(scenario.count)} sinistros. Os 13 métodos retornaram os mesmos IDs e as mesmas estatísticas.` : 'Há uma divergência nos resultados desta consulta.'}
@@ -79,7 +79,7 @@ export default function SampleBenchmarkPanel() {
                 <p>As medições começam após uma execução de aquecimento. A construção está em milissegundos e a consulta em microssegundos.</p>
                 <p>Os cinco métodos do site compartilham a construção de todos os índices e a mesma memória. Esses valores aparecem em cada linha para referência. A memória inclui os registros e as estruturas, sem o consumo total do processo.</p>
                 {selected !== 'region' && <p>Sem um filtro geográfico, os métodos Grade espacial e Quadtree consultam o índice temporal ou municipal. O cenário Área de São Carlos aciona os índices espaciais.</p>}
-                <p>Uma amostra de 1.000 registros permite repetir os testes com pouco custo. Ela não prevê o tempo da base completa. Tempos próximos, sobretudo abaixo de um microssegundo, podem mudar de ordem em outra execução.</p>
+                <p>Os resultados desta amostra não preveem o tempo da base completa. Tempos próximos, sobretudo abaixo de um microssegundo, podem mudar de ordem em outra execução.</p>
             </div>
             <details className="benchmark-details sample-methodology">
                 <summary>Como medimos e conferimos os resultados</summary>
@@ -98,7 +98,7 @@ export default function SampleBenchmarkPanel() {
         <section className="engine-comparison" aria-labelledby="engine-choice-title">
             <h2 id="engine-choice-title">Por que o site usa outro motor</h2>
             <div className="engine-explanation">
-                <p>O programa original lê o CSV a cada execução, guarda os campos completos em cada registro e percorre a estrutura escolhida para aplicar a consulta. Esse fluxo atende ao trabalho de leitura, busca e geração de arquivos.</p>
+                <p>O programa original lê o CSV a cada execução, guarda os campos completos em cada registro e percorre a estrutura escolhida para aplicar a consulta. O programa também gera arquivos com os resultados.</p>
                 <p>O mapa precisa responder a filtros, deslocamentos e mudanças de zoom. O site prepara registros compactos, carrega uma partição por ano e reutiliza seus índices enquanto ela permanece em memória. A API envia os totais, os agrupamentos ou os registros solicitados para aquela região.</p>
                 <p>O leitor de CSV e a lista sequencial originais continuam na preparação dos dados. As consultas interativas usam o motor próprio em C. A comparação acima executa as oito estruturas originais sobre uma amostra pequena para estudar seus custos.</p>
             </div>

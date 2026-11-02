@@ -2,9 +2,7 @@
 
 O programa original organiza os sinistros em oito estruturas. O motor do site guarda registros compactos e cria índices para selecionar os candidatos de cada consulta. Depois da seleção, os filtros verificam cada candidato e os registros aceitos entram nas contagens.
 
-O ensaio usa os mesmos 1.000 sinistros nos dois programas. As quatro consultas retornam 1.000 registros na amostra inteira, 331 no período, 6 no município e 5 na área. As estruturas originais percorrem todos os registros em cada consulta. No site, os cinco métodos compartilham a construção e a memória dos índices.
-
-Os tempos incluem os filtros e o cálculo das estatísticas. Como os dois programas representam os registros de formas diferentes, a comparação mede também o custo dessas representações. As medições usam C nativo e uma amostra de 2026. O servidor do site executa o motor em WebAssembly.
+Os exemplos usam a amostra de 1.000 sinistros da comparação acima. Os tempos medidos incluem o percurso das estruturas, a aplicação dos filtros e o cálculo das estatísticas.
 
 ## Como ler os custos
 
@@ -28,9 +26,9 @@ O pior caso considera a entrada mais desfavorável. O custo esperado depende de 
 
 ## Pilha
 
-Uma pilha dá acesso ao elemento inserido mais recentemente. Na versão encadeada, cada nó aponta para um sinistro e para o nó que ocupava o topo antes dele. Inserir exige criar um nó e atualizar o topo, sem percorrer os anteriores.
+Em uma pilha, o último elemento inserido é o primeiro retirado. Na versão encadeada, cada nó aponta para um sinistro e para o nó que ocupava o topo antes dele. Inserir exige criar um nó e atualizar o topo, sem percorrer os anteriores.
 
-Uma pilha costuma oferecer retirada pelo topo. A implementação do projeto oferece inserção, percurso e destruição. O percurso começa no topo e segue os ponteiros até o primeiro sinistro inserido.
+No projeto, a pilha tem operações de inserção, percurso e destruição. Não há operação de retirada. O percurso começa no topo e segue os ponteiros até o primeiro sinistro inserido.
 
 | Operação | Custo | Condição |
 |---|---|---|
@@ -161,7 +159,7 @@ A inserção procura por busca binária a posição adequada em cada vetor. Depo
 | Construir | O(d n²) | pior caso para inserções sucessivas |
 | Percorrer uma dimensão / espaço | O(d n) / O(d c) | procura o nome do campo a cada chamada; d fixo reduz percurso a O(n) |
 
-O ensaio cria um vetor por município e outro por identificador. Percorre a ordem municipal de ponta a ponta e aplica o filtro a cada sinistro.
+No ensaio, um vetor é ordenado pelo código do município e outro pelo identificador. A consulta percorre o vetor municipal e aplica o filtro a cada sinistro.
 
 Referências: (Celes; Cerqueira; Rangel, 2016, cap. 11, busca e ordenação); (Thareja, 2014, p. 210).
 
@@ -232,7 +230,7 @@ Para consultar uma área, o motor percorre as células que cruzam o retângulo p
 | Consulta espacial | O(log n + g + k + s²) | buscas iniciais nos índices, g células, k candidatos e limpeza dos agrupamentos de saída opcionais; filtros constantes |
 | Espaço | O(n + 128²) | referências e posições iniciais; área temporária de construção separada |
 
-A grade recebe os registros com localização aceita. Sem filtro geográfico, a consulta usa o índice ordenado. Antes de escolher o caminho espacial, o motor calcula os limites dos índices de data e, quando há filtro municipal, de município.
+A grade recebe os registros com coordenadas dentro do recorte adotado. Sem filtro geográfico, a consulta usa o índice ordenado. Antes de escolher o caminho espacial, o motor calcula os limites dos índices de data e, quando há filtro municipal, de município.
 
 Na área da amostra, a grade examina 7 candidatos e o filtro aceita 5. Na consulta por período, sem filtro geográfico, usa o índice ordenado e examina 331.
 
@@ -276,7 +274,7 @@ Referências: (Celes; Cerqueira; Rangel, 2016, cap. 13); (Hanson, 1997, p. 121).
 
 ## Planejador automático
 
-O planejador é a regra que escolhe como percorrer os candidatos. Ele começa com os intervalos ordenados de data e município. Se houver filtro geográfico, estima quantos registros estão nas regiões da quadtree que cruzam a área pedida.
+O planejador é a regra que escolhe como percorrer os candidatos. Ele calcula o intervalo de datas e, quando há filtro municipal, o intervalo do município. Se houver filtro geográfico, estima quantos registros estão nas regiões da quadtree que cruzam a área pedida.
 
 Quando a estimativa é menor que o tamanho do intervalo ordenado, o planejador escolhe a quadtree. Caso contrário, usa o índice ordenado. A estimativa também tem custo: ela visita nós da árvore e pode parar quando alcança o limite usado na comparação.
 

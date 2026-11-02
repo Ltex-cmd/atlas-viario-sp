@@ -7,7 +7,7 @@ export default function StatisticsPanel({ stats, ready, error, onRetry, meta, ye
     const percentage = (n: number) => (stats.total ? n / stats.total * 100 : 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
     return <section className="summary-section" aria-labelledby="summary-title" aria-busy={!ready && !error}>
         <h2 id="summary-title">Resumo dos filtros selecionados</h2>
-        <p className="summary-scope">Os totais incluem sinistros sem localização, em toda a região selecionada nos filtros.</p>
+        <p className="summary-scope">Os totais consideram os filtros selecionados e incluem os sinistros que não podem ser localizados no mapa.</p>
         {!ready ? <>
             <div className="statistics-state" role="status">{error ? <><p>Não foi possível carregar as estatísticas.</p><button onClick={onRetry}>Tentar novamente</button></> : <p>Carregando estatísticas…</p>}</div>
             {!error && <div className="statistics-placeholder" aria-hidden="true"><div/><div/><div/><div/></div>}
@@ -16,7 +16,7 @@ export default function StatisticsPanel({ stats, ready, error, onRetry, meta, ye
                 <article><div className="stat-label">Sinistros</div><div className="stat-value">{fmt(stats.total)}<span className="unit">eventos</span></div></article>
                 <article><div className="stat-label">Sinistros fatais</div><div className="stat-value">{fmt(stats.fatal_events)}<span className="unit">eventos</span></div><div className="stat-note">{percentage(stats.fatal_events)}% dos sinistros da consulta</div></article>
                 <article><div className="stat-label">Vítimas fatais</div><div className="stat-value">{fmt(stats.fatal)}<span className="unit">pessoas</span></div><div className="stat-note">Pessoas que morreram nos sinistros</div></article>
-                <article><div className="stat-label">Com localização</div><div className="stat-value">{fmt(stats.located)}<span className="unit">eventos</span></div><div className="stat-note">{percentage(stats.located)}% dos registros com coordenadas</div></article>
+                <article><div className="stat-label">Localizáveis no mapa</div><div className="stat-value">{fmt(stats.located)}<span className="unit">eventos</span></div><div className="stat-note">{percentage(stats.located)}% dos sinistros da consulta</div></article>
             </div>
             {stats.total === 0 ? <p className="empty-statistics">Nenhum sinistro corresponde aos filtros selecionados.</p> : <div className="bottom-grid">
                 <section className="chart-panel"><div className="section-title"><h3>Sinistros por mês</h3><span className="muted">{year || 'Todos os anos'}</span></div>

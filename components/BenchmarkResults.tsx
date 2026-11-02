@@ -29,7 +29,7 @@ export default function BenchmarkResults({ result }: { result: any }) {
             } };
         })}/>
         <div className="comparison-explanation">
-            <p>A conferência compara o total e um valor numérico calculado a partir dos registros. Valores iguais ajudam a detectar divergências, mas não provam que os conjuntos são idênticos.</p>
+            <p>A conferência compara o total e um valor numérico calculado a partir dos registros. Valores diferentes indicam divergência. Valores iguais não provam que os conjuntos são idênticos.</p>
             {!hasTimes && <p>Esta consulta não tem uma medição isolada do tempo de execução. A seção seguinte mostra tempos medidos em cenários fixos.</p>}
         </div>
         <details className="request-details"><summary>Detalhes da resposta</summary>
