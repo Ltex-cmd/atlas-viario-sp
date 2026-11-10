@@ -120,6 +120,15 @@ main { width: 100%; max-width: 1440px; margin: 0 auto; padding: 32px 32px 0; min
 .journey-pick-status { position: absolute; top: 16px; left: 16px; right: 80px; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; max-width: 32rem; background: var(--surface); border: 1px solid var(--green); border-radius: 4px; font: 500 14px/20px 'Manrope',sans-serif; }
 .journey-pick-status button { display: grid; place-items: center; padding: 4px; background: var(--soft); color: var(--green); border-radius: 4px; }
 .journey-result { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 32px; padding: 16px; margin: 16px 0; background: var(--surface); border-radius: 4px; }
+.journey-comparison { min-width: 0; max-width: 100%; padding: 16px; margin: 16px 0; background: var(--surface); border-left: 4px solid var(--line); color: var(--ink); font-size: 14px; line-height: 20px; overflow-wrap: anywhere; }
+.journey-comparison[data-level=below] { border-left-color: var(--green); }
+.journey-comparison[data-level^=critical_] { border-left-color: var(--danger); }
+.journey-comparison>strong { font-size: 18px; line-height: 28px; font-weight: 600; }
+.journey-comparison p,.journey-comparison ul { margin-top: 8px; }
+.journey-comparison ul { padding-left: 20px; }
+.journey-comparison li+li { margin-top: 8px; }
+.journey-comparison details { margin-top: 12px; color: var(--muted); }
+.journey-comparison summary { cursor: pointer; color: var(--ink); }
 .journey-counter { display: block; font-size: 24px; line-height: 32px; letter-spacing: -.025em; font-weight: 600; }
 .journey-result p { font-size: 14px; line-height: 20px; color: var(--muted); margin-top: 4px; }
 .journey-metrics { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 16px; line-height: 24px; }
@@ -503,3 +512,28 @@ tr+tr td { border-top: 1px solid var(--line); }
   html { scroll-behavior: auto; }
   *,*::before,*::after { transition: none !important; animation: none !important; }
 }
+
+:root { --journey-duel-1: #666d91; --journey-duel-2: #946c43; }
+.journey-insight,.journey-guess { min-width: 0; margin: 16px 0; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; font-size: 14px; line-height: 20px; }
+.journey-insight[hidden] { display: none; }
+.journey-insight h3 { font-size: 18px; line-height: 28px; margin-bottom: 8px; }
+.journey-guess { margin: 0; padding: 0; border: 0; }
+.journey-guess label { display: block; font-size: 18px; line-height: 28px; }
+.journey-guess-actions,.journey-duel-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.journey-guess input { width: 112px; max-width: 100%; min-height: 40px; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); font-size: 16px; line-height: 24px; }
+.journey-options .journey-guess-toggle { flex-direction: row; align-items: center; min-height: 40px; gap: 8px; }
+.journey-guess-toggle input { accent-color: var(--green); width: 16px; height: 16px; }
+.journey-transports { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 8px; }
+.journey-transports li { display: grid; grid-template-columns: minmax(100px,1fr) minmax(32px,2fr) auto; gap: 8px; align-items: center; }
+.journey-bar { height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; }
+.journey-bar>div { height: 100%; background: var(--green); }
+.journey-duel-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin-top: 16px; }
+.journey-duel-card { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.journey-duel-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.journey-duel-heading h4 { font-size: 16px; line-height: 24px; }
+.journey-duel-mark { display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 4px; }
+.duel-color-0 { background: var(--journey-duel-1); }
+.duel-color-1 { background: var(--journey-duel-2); }
+.journey-duel-endpoints { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 8px; }
+@media(max-width: 900px) { .journey-duel-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width: 600px) { .journey-duel-grid { grid-template-columns: minmax(0,1fr); } .journey-result>div { min-width: 0; max-width: 100%; } }

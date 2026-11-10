@@ -8,7 +8,10 @@ Mapa de sinistros de trânsito do estado de São Paulo, com dados reais do Infos
 
 Filtros por município, ano, intervalo de datas, tipo de sinistro, transporte, via e classificação. O mapa permite explorar agrupamentos, pontos originais e densidade, consultar listas paginadas e os 50 atributos da fonte. A seleção de município enquadra sua região automaticamente.
 
-O painel de percursos busca lugares ou recebe origem e destino diretamente no mapa. Calcula caminhos a pé, de bicicleta ou de carro e conta sinistros registrados a até 25, 50 ou 100 metros da geometria retornada pelo roteador. A contagem preserva ocorrências distintas na mesma coordenada e não multiplica uma ocorrência quando o percurso passa por ela novamente. Não é uma medida de risco ou uma classificação de caminho seguro.
+O painel de percursos busca lugares ou recebe origem e destino diretamente no mapa. Calcula caminhos a pé, de bicicleta ou de carro e conta sinistros registrados a até 25, 50 ou 100 metros da geometria retornada pelo roteador. A contagem preserva ocorrências distintas na mesma coordenada e não multiplica uma ocorrência quando o percurso passa por ela novamente. Compara também a contagem com a média municipal por quilômetro de malha viária, no mesmo período e com os mesmos filtros, usando a cauda exata de Poisson e os graus de confiança do DNIT. A contagem e a comparação não são uma medida de risco ou uma classificação de caminho seguro.
+
+O painel permite chutar a contagem antes de revelar, com preferência local, mostra os modos envolvidos e compara até quatro caminhos no duelo, com contagem por quilômetro. Quando a API não fornece o veredito, o navegador consulta as referências municipais com os mesmos filtros, para rotas de até seis municípios. As barras de transportes informam quando usam apenas os primeiros registros disponíveis.
+
 
 ## Arquitetura da publicação
 
@@ -19,6 +22,7 @@ API da publicação: https://atlas-viario-api-lucas.flowy-swift-7745.chatgpt.sit
 - `web/`: entrada do frontend estático.
 - `components/`, `app/globals.css`: interface compartilhada.
 - `worker/`: transporte HTTP, validação, API de rotas e motor C/Wasm.
+- `worker/municipal-polygons.json`, `worker/road-network.json`: polígonos IBGE e referência de extensão da malha OSM por município.
 - `engine-source/`: fonte C exata do módulo compilado.
 - `public/data/`: partições e detalhes consumidos exclusivamente pela API. Não entram no pacote do GitHub Pages.
 - `tests/`: regressões de seleção, filtros, agrupamentos, projeção do percurso e acesso entre os domínios.

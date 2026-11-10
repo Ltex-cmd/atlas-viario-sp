@@ -1,4 +1,6 @@
 // The Worker handles transport and JSON. Filtering, indexes and aggregation execute in C.
+import { prepareComparison, finishComparison, type ComparisonContext } from './route-comparison';
+import { routeLength } from '../lib/journey';
 import wasmModule from './engine.wasm?module';
 import { createPartitionReader } from './partition-cache';
 import { JourneyError, searchPlaces, requestJourney, readJourneyBody } from './journey-provider';
@@ -87,13 +89,17 @@ export async function handleAPI(request:Request,env:Env):Promise<Response>{
  if(!Number.isInteger(offset)||offset<0||offset>100000000||!Number.isInteger(limit)||limit<1||limit>200)throw new JourneyError('Página inválida.');
  const includeMap=body.include_map===true,points:any[]=[],items:any[]=[];
  let total=0,remainingOffset=offset;
+ let comparisonContext:ComparisonContext|undefined,comparisonFailed=false;
+ if(includeMap)try{comparisonContext=prepareComparison(coordinates,f.city);}catch(error){comparisonFailed=true;console.error('Comparação do percurso',error);}
  const years=m.years.filter((y:any)=>(!f.start||y.year>=Math.floor(f.start/10000))&&(!f.end||y.year<=Math.floor(f.end/10000)));
  for(const y of years)await readPartition(y.year,()=>partitionBytes(env,y.year),(state)=>{
   const page=select(state,f,Math.max(0,remainingOffset),Math.max(0,limit-items.length));
   items.push(...page.items);total+=page.total;remainingOffset-=page.total;
   if(includeMap&&points.length<2000)points.push(...select(state,f,0,2000-points.length).items);
+  if(comparisonContext&&!comparisonFailed)try{for(const [code] of comparisonContext.selected)comparisonContext.counts[code]=(comparisonContext.counts[code]||0)+execute(state,{...f,city:Number(code),spatial:0,bbox:[-54,-26,-43,-19],grid_size:0,grid_cell:0,route:undefined},1).located;}catch(error){comparisonFailed=true;console.error('Comparação do percurso',error);}
  });
  output={total,offset,limit,items,has_more:offset+items.length<total,corridor_m:radius,bbox:f.bbox,filters:body.filters,points:includeMap?points:undefined,map_limit:2000,map_shown:includeMap?points.length:undefined,order:'data crescente; ordem da fonte em empates',distance_model:'distância aproximada à linha do percurso; projeção local com latitude de referência'};
+ if(includeMap){try{if(comparisonFailed||!comparisonContext)throw Error('Referência indisponível');output.comparison=finishComparison(comparisonContext,total,radius,m.cities);}catch(error){console.error('Comparação do percurso',error);output.comparison={status:'unavailable',reason:'no_reference',observed:total,route_km:Math.round(routeLength(coordinates)/10)/100,municipalities:[],level:null};}}
  }
  else if(url.pathname==='/api/v1/metadata')output=m;
  else if(url.pathname.startsWith('/api/v1/sinistros/')){

@@ -1,0 +1,148 @@
+/* Movimento da interface. Carregado depois de globals.css.
+   Todo estado de repouso é o estado final: os quadros-chave só descrevem a entrada,
+   e a regra de prefers-reduced-motion em globals.css desliga tudo de uma vez. */
+
+@keyframes rise-in { from { opacity: 0; transform: translateY(12px); } }
+@keyframes drop-in { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(8px) scale(.96); } }
+@keyframes grow-x { from { transform: scaleX(0); } }
+@keyframes grow-y { from { transform: scaleY(0); } }
+@keyframes drawer-left { from { transform: translateX(-100%); } }
+@keyframes drawer-right { from { opacity: 0; transform: translateX(48px); } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%,16px); } }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@keyframes symbol-in { from { opacity: 0; transform: rotate(-24deg) scale(.8); } }
+@keyframes ring { from { box-shadow: 0 0 0 0 #2d716466; } to { box-shadow: 0 0 0 8px #2d716400; } }
+@keyframes slide-bar { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+/* Entrada da página e troca de abas */
+.brand-symbol svg { animation: symbol-in 900ms var(--curve) both; transition: transform 500ms var(--curve); }
+.brand:hover .brand-symbol svg { transform: rotate(-8deg) scale(1.08); }
+.topbar nav { animation: fade-in 600ms var(--curve) both; }
+.page-heading h1 { animation: rise-in 500ms var(--curve) both; }
+.context-line>span { animation: fade-in 400ms var(--curve) both; }
+.map-section { animation: fade-in 700ms var(--curve) both; }
+.lab-content,.about-grid>section,.summary-section>h2,.summary-scope { animation: rise-in 600ms var(--curve) both; }
+.about-grid>section+section { animation-delay: 120ms; }
+.coverage-list>div,.about-tech li { animation: rise-in 500ms var(--curve) both; }
+.coverage-list>div:nth-child(2),.about-tech li:nth-child(2) { animation-delay: 80ms; }
+.coverage-list>div:nth-child(3),.about-tech li:nth-child(3) { animation-delay: 160ms; }
+.coverage-list>div:nth-child(4) { animation-delay: 240ms; }
+
+/* Blocos revelados quando entram na tela (atributo definido por components/motion.tsx) */
+[data-reveal=out] { opacity: 0; }
+[data-reveal=in] { animation: fade-in 500ms var(--curve) both; }
+.stats-grid[data-reveal] { opacity: 1; animation: none; }
+.stats-grid[data-reveal=out] article { opacity: 0; }
+.stats-grid[data-reveal=in] article { animation: rise-in 600ms var(--curve) both; }
+.stats-grid[data-reveal=in] article:nth-child(2) { animation-delay: 80ms; }
+.stats-grid[data-reveal=in] article:nth-child(3) { animation-delay: 160ms; }
+.stats-grid[data-reveal=in] article:nth-child(4) { animation-delay: 240ms; }
+
+/* Gráficos: as barras crescem na entrada e acompanham as mudanças de valor */
+.bar { transform-origin: bottom; transition: height 600ms var(--curve), background-color 300ms var(--curve); }
+.type-name i { transform-origin: left; transition: width 600ms var(--curve); }
+[data-reveal=in] .bar { animation: grow-y 800ms var(--curve) both; animation-delay: calc(var(--i,0) * 35ms + 100ms); }
+[data-reveal=in] .type-name i { animation: grow-x 800ms var(--curve) both; animation-delay: calc(var(--i,0) * 70ms + 150ms); }
+[data-reveal=in] .type-row { animation: fade-in 500ms var(--curve) both; animation-delay: calc(var(--i,0) * 70ms + 100ms); }
+.month-column>span { transition: color 300ms var(--curve); }
+.month-column:hover>span { color: var(--ink); }
+.timing-track i,.compare-meter i,.journey-bar>div { transform-origin: left; animation: grow-x 900ms var(--curve) both; transition: width 600ms var(--curve); }
+.timing-bars>div:nth-child(2) .timing-track i,.journey-transports li:nth-child(2) .journey-bar>div { animation-delay: 70ms; }
+.timing-bars>div:nth-child(3) .timing-track i,.journey-transports li:nth-child(3) .journey-bar>div { animation-delay: 140ms; }
+.timing-bars>div:nth-child(4) .timing-track i,.journey-transports li:nth-child(4) .journey-bar>div { animation-delay: 210ms; }
+.timing-bars>div:nth-child(5) .timing-track i,.journey-transports li:nth-child(5) .journey-bar>div { animation-delay: 280ms; }
+.timing-bars>div:nth-child(n+6) .timing-track i,.journey-transports li:nth-child(n+6) .journey-bar>div { animation-delay: 350ms; }
+.benchmark-facts>span,.equivalence,.comparison-table,.guide-measured-example { animation: rise-in 600ms var(--curve) both; }
+.benchmark-facts>span:nth-child(2) { animation-delay: 70ms; }
+.benchmark-facts>span:nth-child(3) { animation-delay: 140ms; }
+.benchmark-facts>span:nth-child(4) { animation-delay: 210ms; }
+.comparison-table tbody tr { transition: background-color 300ms var(--curve); }
+.comparison-table tbody tr:hover td,.comparison-table tbody tr:hover th { background: var(--paper); }
+
+/* Estados de carregamento: brilho que percorre o espaço reservado */
+.statistics-placeholder>div,.is-loading .stat-value { background: linear-gradient(90deg,var(--line) 25%,var(--paper) 50%,var(--line) 75%) 0 0 / 200% 100%; animation: shimmer 1400ms linear infinite; }
+.statistics-placeholder>div:nth-child(2) { animation-delay: 120ms; }
+.statistics-placeholder>div:nth-child(3) { animation-delay: 240ms; }
+.statistics-placeholder>div:nth-child(4) { animation-delay: 360ms; }
+.map-busy { overflow: hidden; animation: drop-in 300ms var(--curve) both; }
+.loading-bar { position: relative; overflow: hidden; background: var(--soft); animation: none; }
+.loading-bar::after { content: ''; position: absolute; inset: 0; width: 40%; background: var(--green); animation: slide-bar 900ms var(--curve) infinite; }
+
+/* Faixas de aviso e de estado surgem de cima */
+.error,.coverage-warning,.selected-group-strip,.point-limit-status,.road-status,.road-analysis-controls,.journey-error,.filter-error { animation: drop-in 400ms var(--curve) both; }
+
+/* Painéis laterais, diálogo e aviso flutuante */
+.sidebar.open { animation: drawer-left 450ms var(--curve) both; }
+.sidebar-scrim { animation: fade-in 300ms var(--curve) both; }
+.filter-fields>*,.filter-actions { animation: rise-in 500ms var(--curve) both; animation-delay: 120ms; }
+.filter-fields>*:nth-child(n+3) { animation-delay: 180ms; }
+.filter-fields>*:nth-child(n+5) { animation-delay: 240ms; }
+.detail-panel[open] { animation: drawer-right 450ms var(--curve) both; }
+.detail-panel::backdrop { animation: fade-in 300ms var(--curve) both; }
+.detail-panel h2,.event-section,.event-location,.raw-fields { animation: rise-in 500ms var(--curve) both; animation-delay: 150ms; }
+.event-card { animation: rise-in 450ms var(--curve) both; transition: background-color 300ms var(--curve), transform 300ms var(--curve); }
+.event-card:nth-child(2) { animation-delay: 30ms; }
+.event-card:nth-child(3) { animation-delay: 60ms; }
+.event-card:nth-child(4) { animation-delay: 90ms; }
+.event-card:nth-child(5) { animation-delay: 120ms; }
+.event-card:nth-child(6) { animation-delay: 150ms; }
+.event-card:nth-child(n+7) { animation-delay: 180ms; }
+.event-card:hover { transform: translateX(4px); }
+.casualty-grid>div { animation: pop-in 500ms var(--curve) both; animation-delay: 200ms; }
+.casualty-grid>div:nth-child(2) { animation-delay: 250ms; }
+.casualty-grid>div:nth-child(3) { animation-delay: 300ms; }
+.casualty-grid>div:nth-child(4) { animation-delay: 350ms; }
+.casualty-grid>div:nth-child(5) { animation-delay: 400ms; }
+.toast { animation: toast-in 450ms var(--curve) both; }
+details[open]>:not(summary) { animation: rise-in 400ms var(--curve) both; }
+summary { transition: color 300ms var(--curve); }
+summary:hover { color: var(--green); }
+
+/* Percursos */
+.journey-panel { animation: drop-in 450ms var(--curve) both; }
+.journey-search { transition: border-color 300ms var(--curve), box-shadow 300ms var(--curve); }
+.journey-search:focus-within,.id-search:focus-within { border-color: var(--green); box-shadow: 0 0 0 2px var(--soft); }
+.journey-search button[aria-pressed=true] { animation: ring 1200ms var(--curve) infinite; }
+.journey-search-results { animation: drop-in 350ms var(--curve) both; }
+.journey-search-results li,.journey-records li { animation: rise-in 400ms var(--curve) both; }
+.journey-search-results li:nth-child(2),.journey-records li:nth-child(2) { animation-delay: 30ms; }
+.journey-search-results li:nth-child(3),.journey-records li:nth-child(3) { animation-delay: 60ms; }
+.journey-search-results li:nth-child(4),.journey-records li:nth-child(4) { animation-delay: 90ms; }
+.journey-search-results li:nth-child(5),.journey-records li:nth-child(5) { animation-delay: 120ms; }
+.journey-search-results li:nth-child(n+6),.journey-records li:nth-child(n+6) { animation-delay: 150ms; }
+.journey-pick-status { animation: drop-in 400ms var(--curve) both; }
+.journey-result,.journey-comparison,.journey-insight,.journey-records,.journey-guess { animation: rise-in 550ms var(--curve) both; }
+.journey-comparison { transition: border-color 500ms var(--curve); }
+.journey-counter:not(.pending-counter) { animation: pop-in 600ms var(--curve) both; }
+.journey-metrics>span { animation: fade-in 500ms var(--curve) both; animation-delay: 150ms; }
+.journey-duel-card { animation: pop-in 550ms var(--curve) both; transition: border-color 300ms var(--curve), transform 300ms var(--curve); }
+.journey-duel-card:nth-child(2) { animation-delay: 90ms; }
+.journey-duel-card:nth-child(3) { animation-delay: 180ms; }
+.journey-duel-card:nth-child(4) { animation-delay: 270ms; }
+.journey-duel-card:hover { border-color: var(--green); transform: translateY(-2px); }
+.journey-transports li { animation: fade-in 500ms var(--curve) both; }
+
+/* Resposta ao ponteiro */
+.filter-fields input,.filter-fields select,.journey-options select,.guide-controls select,.road-analysis-controls select,.id-search { transition: border-color 300ms var(--curve), box-shadow 300ms var(--curve); }
+.filter-fields input:hover,.filter-fields select:hover,.journey-options select:hover,.guide-controls select:hover { border-color: var(--green); }
+.apply-button svg,.journey-intro .journey-text-button svg,.journey-options .primary-button svg,.journey-search-results li button svg,.journey-records li button svg,.selected-group-strip button:not(.dismiss-group) svg,.id-search button svg,.text-link svg,.event-card h3 svg,.map-controls button svg,.icon-button svg,.filter-heading button svg { transition: transform 300ms var(--curve); }
+.apply-button:hover svg,.journey-intro .journey-text-button:hover svg,.journey-options .primary-button:not(:disabled):hover svg,.journey-search-results li button:hover svg,.journey-records li button:hover svg,.selected-group-strip button:not(.dismiss-group):hover svg,.id-search button:hover svg { transform: translateX(4px); }
+.text-link:hover svg,.event-card:hover h3 svg { transform: translate(2px,-2px); }
+.map-controls button:not(:disabled):hover svg { transform: scale(1.15); }
+.icon-button:hover svg,.filter-heading button.mobile-close-filters:hover svg { transform: rotate(90deg); }
+.filter-heading button:not(.mobile-close-filters):hover svg { transform: rotate(-90deg); }
+.primary-button:not(:disabled):hover:not(:active),.apply-button:hover:not(:active),.locate-event:hover:not(:active) { transform: translateY(-1px); }
+.map-switch button,.topbar nav button,.benchmark-scenarios button { transition: background-color 300ms var(--curve), color 300ms var(--curve), transform 300ms var(--curve); }
+.legend-dot { animation: pop-in 500ms var(--curve) both; }
+.legend-dot.two { animation-delay: 60ms; }
+.legend-dot.three { animation-delay: 120ms; }
+.legend-dot.four { animation-delay: 180ms; }
+.density-scale i { transform-origin: left; animation: grow-x 600ms var(--curve) both; }
+.density-scale i:nth-child(2) { animation-delay: 80ms; }
+.density-scale i:nth-child(3) { animation-delay: 160ms; }
+.density-scale i:nth-child(4) { animation-delay: 240ms; }
+.map-zoom { transition: color 300ms var(--curve); }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
