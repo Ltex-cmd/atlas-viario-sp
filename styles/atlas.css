@@ -1,0 +1,9 @@
+/* Keep the existing Atlas layout below BoardUI utilities, without a global reset. */
+@layer theme, base, atlas, components, utilities;
+/* Keep the remote font outside the Atlas layer: production hoists @import,
+   which would otherwise register Atlas before BoardUI's transparent base. */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+@import '../app/globals.css' layer(atlas);
+@import '../app/motion.css' layer(atlas);
+@import './boardui/globals.css';
+@import './atlas-boardui.css';
