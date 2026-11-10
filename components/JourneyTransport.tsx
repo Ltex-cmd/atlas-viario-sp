@@ -11,8 +11,8 @@ export default function JourneyTransport({ points, total, shown, mode }: { point
         <h3>Quem se envolveu</h3>
         <p>{counts[bit] ? `${n(counts[bit])} de ${n(denominator)} envolveram ${noun}.` : `Nenhum dos ${n(denominator)} envolveu ${noun}.`}</p>
         <ul className="journey-transports">{labels.map((label, bit) => counts[bit] > 0 && <li key={label}>
-            <span>{label}</span><div className="journey-bar" aria-hidden="true"><div style={{ width: `${counts[bit] / max * 100}%` }}/></div><span>{n(counts[bit])} de {n(denominator)}</span>
+            <span>{label}</span><div className="journey-bar" aria-hidden="true"><div style={{ width: `${counts[bit] / max * 100}%` }}/></div><span>{n(counts[bit])}</span>
         </li>)}</ul>
-        <p className="journey-note">Um sinistro pode envolver mais de um modo, então as barras não somam o total. {total > shown && `Calculado sobre os primeiros ${n(shown)} registros.`} {counts[7] > 0 && `${n(counts[7])} registros têm modo não disponível.`}</p>
+        <p className="journey-note">Um sinistro pode envolver mais de um modo. {total > shown && `Calculado sobre os primeiros ${n(shown)} registros.`} {counts[7] > 0 && `${n(counts[7])} registros têm modo não disponível.`}</p>
     </section>;
 }

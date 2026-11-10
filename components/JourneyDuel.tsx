@@ -59,7 +59,7 @@ export default function JourneyDuel({ active, journey, from, to, total, radius, 
             <button className="journey-text-button" disabled={busy || entries.length >= 4} onClick={() => void compare()}>Comparar a pé, bicicleta e carro</button>
         </div>
         <div aria-live="polite">{headline && <p>{headline}</p>}</div>
-        <p className="journey-note">Mesma faixa de {radius} m e mesmos filtros. Caminhos mais longos tendem a ter mais registros; veja também o valor por km.</p>
+        {headline && <p className="journey-note">Caminhos mais longos tendem a ter mais registros; veja também o valor por km.</p>}
         <div className="journey-duel-grid" aria-live="polite">{entries.map((entry, index) => <article className="journey-duel-card" key={entry.id}>
             <div className="journey-duel-heading"><h4><span className={`journey-duel-mark duel-color-${index % 2}`} aria-hidden="true"/>{modeLabels[entry.mode]}{duelLabel(entries, index).startsWith('o caminho') && ` · Caminho ${index + 1}`}</h4><button className="journey-text-button" disabled={busy} aria-label={`Remover caminho ${index + 1}`} onClick={() => update(entries.filter(e => e.id !== entry.id))}><X size={18}/></button></div>
             <p className="journey-duel-endpoints" title={`${entry.from.label} → ${entry.to.label}`}>{entry.from.label} → {entry.to.label}</p>

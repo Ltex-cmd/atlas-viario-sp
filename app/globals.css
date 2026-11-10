@@ -535,3 +535,5 @@ tr+tr td { border-top: 1px solid var(--line); }
 .journey-duel-endpoints { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 8px; }
 @media(max-width: 900px) { .journey-duel-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media(max-width: 600px) { .journey-duel-grid { grid-template-columns: minmax(0,1fr); } .journey-result>div { min-width: 0; max-width: 100%; } }
+.journey-about { margin-top: 12px; color: var(--muted); font-size: 14px; line-height: 20px; }
+.journey-about summary { cursor: pointer; color: var(--green); font-weight: 600; }
